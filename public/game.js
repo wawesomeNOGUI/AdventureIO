@@ -38,6 +38,9 @@ var pX = 50;
 var pY = 50;
 var speed = 0.75;
 
+// World Vars
+var items = [];
+
 //Render using the NTSC Atari 2600 pallete
 //https://en.wikipedia.org/wiki/List_of_video_game_console_palettes#Atari_2600
 //(inspect element to get the hex color values from the atari color table)
@@ -51,20 +54,32 @@ var render = function () {
 
    for (var key in Updates) {     //Updates defined in index.html
       if (Updates.hasOwnProperty(key) && key != playerTag && previousUpdate != undefined && previousUpdate.hasOwnProperty(key))  {
-        var x = smoothstep(previousUpdate[key][0], Updates[key][0], t);
-        var y = smoothstep(previousUpdate[key][1], Updates[key][1], t);
+        var x = smoothstep(previousUpdate[key].X, Updates[key].X, t);
+        var y = smoothstep(previousUpdate[key].Y, Updates[key].Y, t);
 
+        // Draw Player
         ctx.fillStyle = "#ecb0e0";
         ctx.fillRect(Math.floor(x), Math.floor(y), 4, 4);
+
+        // Draw Held Item
+        if (Updates[key].Held.Kind == "sword") {
+          ctx.drawImage(swordSprite, x + Updates[key].Held.X, y + Updates[key].Held.Y);
+        }
+      } else if (Updates.hasOwnProperty(key) && key == playerTag) {
+        //Local Player
+        ctx.fillStyle = canvas.style.borderColor;
+        ctx.fillRect(Math.floor(pX), Math.floor(pY), 4, 4);
+
+          if (Updates[playerTag].Held.Kind == "sword") {
+            ctx.drawImage(swordSprite, pX, pY);
+          }
       }
    }
 
-   //Local Player
-   ctx.fillStyle = canvas.style.borderColor;
-   ctx.fillRect(Math.floor(pX), Math.floor(pY), 4, 4);
+   
 
-   //Draw swords
-   ctx.drawImage(swordSprite, 50, 60);
+   //Draw items laying on ground
+   ctx.drawImage(swordSprite, 20, 20);
 };
 
 

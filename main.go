@@ -307,40 +307,44 @@ func getSyncMapReadyForSending(m *sync.Map) {
 			panic(err)
 		}
 
-		UpdatesString = string(jsonTemp)   // **** Make Concurrent safe with mutex (so read doesn't just get part of a string or not most current string?)
-		fmt.Println(UpdatesString)
-		
+		UpdatesString = string(jsonTemp)   // **** Make Concurrent safe with mutex (so read doesn't just get part of a string or not most current string?)		
 	}
 }
 
 // Game Vars
 // var items []item = []item{item{50, 50, "", "sword"}}
-var sword Item = Item{50, 50, "", "sword"}
+var sword Item = Item{20, 20, "", "sword"}
 
 // All server orchestrated game logic
 func gameLoop() {
-	math.Pow(5, 6)
-	/*
 	for {
 		time.Sleep(time.Millisecond * 15)
 
 		Updates.Range(func(k, v interface{}) bool {
-			if math.Sqrt(math.Pow(v.([]float64)[0] - sword.x, 2) + math.Pow(v.([]float64)[1] - sword.y, 2)) < 5 && sword.owner == "" {
+			d := math.Sqrt(math.Pow(v.(Player).X - sword.X, 2) + math.Pow(v.(Player).Y - sword.Y, 2))
+			
+			if sword.Owner == "" &&  d < 5 {
 				// pick up item
-				sword.owner = k.(string); 
+				sword.X = d  // to offset sword from player
+				sword.Y = d
+				sword.Owner = k.(string); 
+				tmpPlayer := v.(Player)
+				tmpPlayer.Held = sword;
+				Updates.Store(k, tmpPlayer)
 			}
+/*
+			if k.(string) == sword.Owner {
+				sword.x = v.(Player).X
+				sword.y = v.(Player).Y
 
-			if k.(string) == sword.owner {
-				sword.x = v.([]float64)[0]
-				sword.y = v.([]float64)[1]
 				Updates.Store(k, )
 			}
+*/
 
 			return true   
 			// return false	// If f returns false, range stops the iteration. 
 		})
 	}
-	*/
 }
 
 func main() {
