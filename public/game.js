@@ -63,7 +63,7 @@ var render = function () {
 
         // Draw Held Item
         if (Updates[key].Held.Kind == "sword") {
-          ctx.drawImage(swordSprite, x + Updates[key].Held.X, y + Updates[key].Held.Y);
+          ctx.drawImage(swordSprite, Math.floor(x + Updates[key].Held.X), y + Math.floor(Updates[key].Held.Y));
         }
       } else if (Updates.hasOwnProperty(key) && key == playerTag) {
         //Local Player
@@ -71,7 +71,7 @@ var render = function () {
         ctx.fillRect(Math.floor(pX), Math.floor(pY), 4, 4);
 
           if (Updates[playerTag].Held.Kind == "sword") {
-            ctx.drawImage(swordSprite, pX, pY);
+            ctx.drawImage(swordSprite, Math.floor(pX + 2.5), Math.floor(pY + 2.5));
           }
       }
    }
@@ -112,35 +112,41 @@ var step = function() {
 };
 
 var keyPress = function() {
-
-for(var key in keysDown) {
+  for(var key in keysDown) {
     var value = Number(key);
 
-   if (value == 37) {   //37 = left
-     pX = pX - speed;
-     TCPChan.send("X" + pX);
-	    //Put stuff for keypress to activate here
-   } else if(value == 39){  //39 = right
-     pX = pX + speed;
-     TCPChan.send("X" + pX);
-   } else if(value == 40){  //40 = down
-     pY = pY + speed;
-     TCPChan.send("Y" + pY);
-   } else if(value == 38){  //38 = up
-     pY = pY - speed;
-     TCPChan.send("Y" + pY);
-   }
-
- }
- 
+    if (value == 37) {   //37 = left
+      pX = pX - speed;
+      TCPChan.send("X" + pX);
+    } else if (value == 39) {  //39 = right
+      pX = pX + speed;
+      TCPChan.send("X" + pX);
+    } else if (value == 40) {  //40 = down
+      pY = pY + speed;
+      TCPChan.send("Y" + pY);
+    } else if (value == 38) {  //38 = up
+      pY = pY - speed;
+      TCPChan.send("Y" + pY);
+    }
+  }
 };
 
+var spaceKeyDown = false;
 window.addEventListener("keydown", function (event) {
   keysDown[event.keyCode] = true;
+
+  if (event.keyCode == 32 && !spaceKeyDown) {
+    spaceKeyDown = true;
+    TCPChan.send("D");  // drop item
+  }
 });
 
 window.addEventListener("keyup", function (event) {
   delete keysDown[event.keyCode];
+
+  if (event.keyCode == 32 && spaceKeyDown) {
+    spaceKeyDown = false;
+  }
 });
 
 window.addEventListener("resize", function(){
