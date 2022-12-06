@@ -295,9 +295,14 @@ func getSyncMapReadyForSending(m *sync.Map) {
 	for {
 		time.Sleep(time.Millisecond)
 
-		tmpMap := make(map[string]Player)
+		tmpMap := make(map[string]interface{})
 		m.Range(func(k, v interface{}) bool {
 			tmpMap[k.(string)] = v.(Player)
+			return true
+		})
+
+		strayItems.Range(func(k, v interface{}) bool {
+			tmpMap[k.(string)] = v
 			return true
 		})
 
