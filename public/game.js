@@ -52,35 +52,39 @@ var render = function () {
    //Draw Players
    t += interpolateInc;
 
-   for (var key in Updates) {     //Updates defined in index.html
-      if (Updates.hasOwnProperty(key) && key != playerTag && previousUpdate != undefined && previousUpdate.hasOwnProperty(key))  {
-        var x = smoothstep(previousUpdate[key].X, Updates[key].X, t);
-        var y = smoothstep(previousUpdate[key].Y, Updates[key].Y, t);
+  for (var key in Updates) {     //Updates defined in index.html
+    if (Updates.hasOwnProperty(key)) {
+      if (Number(key)) {  // then its a player
+        if (key != playerTag && previousUpdate != undefined && previousUpdate.hasOwnProperty(key))  {
+          var x = smoothstep(previousUpdate[key].X, Updates[key].X, t);
+          var y = smoothstep(previousUpdate[key].Y, Updates[key].Y, t);
 
-        // Draw Player
-        ctx.fillStyle = "#ecb0e0";
-        ctx.fillRect(Math.floor(x), Math.floor(y), 4, 4);
+          // Draw Player
+          ctx.fillStyle = "#ecb0e0";
+          ctx.fillRect(Math.floor(x), Math.floor(y), 4, 4);
 
-        // Draw Held Item
-        if (Updates[key].Held.Kind == "sword") {
-          ctx.drawImage(swordSprite, Math.floor(x + Updates[key].Held.X), y + Math.floor(Updates[key].Held.Y));
-        }
-      } else if (Updates.hasOwnProperty(key) && key == playerTag) {
-        //Local Player
-        ctx.fillStyle = canvas.style.borderColor;
-        ctx.fillRect(Math.floor(pX), Math.floor(pY), 4, 4);
+          // Draw Held Item
+          if (Updates[key].Held.Kind == "sword") {
+            ctx.drawImage(swordSprite, Math.floor(x + Updates[key].Held.X), Math.floor(y - Updates[key].Held.Y));
+          }
+        } else if (Updates.hasOwnProperty(key) && key == playerTag) {
+          //Local Player
+          ctx.fillStyle = canvas.style.borderColor;
+          ctx.fillRect(Math.floor(pX), Math.floor(pY), 4, 4);
 
           if (Updates[playerTag].Held.Kind == "sword") {
-            ctx.drawImage(swordSprite, Math.floor(pX + 2.5), Math.floor(pY + 2.5));
+            ctx.drawImage(swordSprite, Math.floor(pX + Updates[key].Held.X), Math.floor(pY - Updates[key].Held.Y));
           }
+        }
+      } else { // its an item
+        if (Updates[key].Kind == "sword") {
+          ctx.drawImage(swordSprite, Updates[key].X, Updates[key].Y);
+        }
       }
-   }
+    }
+  }
 
-   
-
-   //Draw items laying on ground
-   ctx.drawImage(swordSprite, 20, 20);
-};
+}
 
 
 var update = function() {
