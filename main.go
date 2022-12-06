@@ -18,7 +18,7 @@ import (
 	"github.com/wawesomeNOGUI/webrtcGameTemplate/signal"
 )
 
-//Updates Map
+// Game Updates Map
 var Updates sync.Map
 var UpdatesString string
 var NumberOfPlayers int
@@ -159,7 +159,12 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	reliableChannel.OnMessage(func(msg webrtc.DataChannelMessage) {
 		//fmt.Printf("Message from DataChannel '%s': '%s'\n", reliableChannel.Label(), string(msg.Data))
 
-		//fmt.Println(msg.Data)
+		playerStruct, ok := Updates.Load(playerTag)
+		if ok == false {
+			fmt.Println("Uh oh")
+		}
+		tmpPlayer := playerStruct.(Player)  // need to create a temporary copy to edit: https://stackoverflow.com/questions/17438253/accessing-struct-fields-inside-a-map-value-without-copying
+
 		if msg.Data[0] == 'X' { //88 = "X"
 			x, err := strconv.ParseFloat(string(msg.Data[1:]), 64)
 			if err != nil {
@@ -171,14 +176,8 @@ func echo(w http.ResponseWriter, r *http.Request) {
 				x = 2
 			} else if x > 154 {
 				x = 154
-			}
-
-			playerStruct, ok := Updates.Load(playerTag)
-			if ok == false {
-				fmt.Println("Uh oh")
-			}			
-
-			tmpPlayer := playerStruct.(Player)
+			}	
+			
 			tmpPlayer.X = x
 			Updates.Store(playerTag, tmpPlayer)
 		} else if msg.Data[0] == 'Y' { //89 = "Y"
@@ -193,22 +192,22 @@ func echo(w http.ResponseWriter, r *http.Request) {
 				y = 99
 			}
 
-			playerStruct, ok := Updates.Load(playerTag)
-			if ok == false {
-				fmt.Println("Uh oh")
-			}
-
-			tmpPlayer := playerStruct.(Player)
 			tmpPlayer.Y = y
 			Updates.Store(playerTag, tmpPlayer)
-		} 
-		
-/*
-		else if msg.Data[0] == 'S' {
-			//picked up sword
-			reliableBroadcast("SP"+ playerTag)
+		} else if msg.Data[0] == 'D' {
+			//dropped item
+			if tmpPlayer.Held.Kind != "" {
+				tmpItem := tmpPlayer.Held
+				tmpItem.X = tmpPlayer.X + tmpItem.X * 2
+				tmpItem.Y = tmpPlayer.Y + tmpItem.Y * 2
+				tmpItem.Owner = ""
+
+				strayItems.Store(tmpItem.Kind, tmpItem)
+
+				tmpPlayer.Held = Item{}
+				Updates.Store(playerTag, tmpPlayer)
+			}
 		}
-*/
 	})
 
 	//==============================================================================
@@ -312,8 +311,13 @@ func getSyncMapReadyForSending(m *sync.Map) {
 }
 
 // Game Vars
-// var items []item = []item{item{50, 50, "", "sword"}}
-var sword Item = Item{20, 20, "", "sword"}
+var strayItems sync.Map  // will contain items that can be picked up by players
+//  var ownedItems sync.Map  // will contain items with the key being the playerTag who owns it
+// var sword Item = Item{20, 20, "", "sword"}
+
+func initGameVars() {
+	strayItems.Store("sword", Item{20, 20, "", "sword"})
+}
 
 // All server orchestrated game logic
 func gameLoop() {
@@ -321,25 +325,29 @@ func gameLoop() {
 		time.Sleep(time.Millisecond * 15)
 
 		Updates.Range(func(k, v interface{}) bool {
-			d := math.Sqrt(math.Pow(v.(Player).X - sword.X, 2) + math.Pow(v.(Player).Y - sword.Y, 2))
+			strayItems.Range(func(ki, vi interface{}) bool {
+				d := math.Sqrt(math.Pow(v.(Player).X - vi.(Item).X, 2) + math.Pow(v.(Player).Y - vi.(Item).Y, 2))
 			
-			if sword.Owner == "" &&  d < 5 {
-				// pick up item
-				sword.X = d  // to offset sword from player
-				sword.Y = d
-				sword.Owner = k.(string); 
-				tmpPlayer := v.(Player)
-				tmpPlayer.Held = sword;
-				Updates.Store(k, tmpPlayer)
-			}
-/*
-			if k.(string) == sword.Owner {
-				sword.x = v.(Player).X
-				sword.y = v.(Player).Y
+				if d < 5 {
+					// pick up item
+					tmpItem := vi.(Item)
+					strayItems.Delete(ki)
 
-				Updates.Store(k, )
-			}
-*/
+					tmpItem.X = v.(Player).X - tmpItem.X  // to offset Item from player
+					tmpItem.Y = v.(Player).Y - tmpItem.Y
+					tmpItem.Owner = k.(string); 
+
+					tmpPlayer := v.(Player)
+					tmpPlayer.Held = tmpItem;
+
+					Updates.Store(k, tmpPlayer)
+					// ownedItems.Store(ki, tmpItem)
+
+					return false // If f returns false, range stops the iteration.
+				}
+
+				return true
+			})
 
 			return true   
 			// return false	// If f returns false, range stops the iteration. 
@@ -351,6 +359,8 @@ func main() {
 
 	go getSyncMapReadyForSending(&Updates)
 	go gameLoop()
+
+	initGameVars()
 
 	// Listen on UDP Port 80, will be used for all WebRTC traffic
 	udpListener, err := net.ListenUDP("udp", &net.UDPAddr{
@@ -366,7 +376,7 @@ func main() {
 	// Create a SettingEngine, this allows non-standard WebRTC behavior
 	settingEngine := webrtc.SettingEngine{}
 
-	//Our Public Candidate is declared here cause were not using a STUN server for discovery
+	//Our Public Candidate is declared here cause we're not using a STUN server for discovery
 	//and just hardcoding the open port, and port forwarding webrtc traffic on the router
 	settingEngine.SetNAT1To1IPs([]string{}, webrtc.ICECandidateTypeHost)
 
