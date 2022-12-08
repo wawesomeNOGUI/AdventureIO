@@ -23,15 +23,10 @@ var Updates sync.Map
 var UpdatesString string
 var NumberOfPlayers int
 
-//Sync Map of all reliable channels so we can broadcast messages to everyone
-var reliableChans sync.Map
-
-func reliableBroadcast(s string) {
-	reliableChans.Range(func(k, v interface{}) bool {
-		v.(*webrtc.DataChannel).SendText(s)
-		return true
-	})
-}
+// Maps of Datachannels for broadcasting or sending messages between players
+// DataChannelContainer in messaging.go
+var reliableChans DataChannelContainer
+var unreliableChans DataChannelContainer
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool { return true },
@@ -105,7 +100,8 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			Updates.Delete(playerTag)
 			fmt.Println("Deleted Player")
 
-			reliableChans.Delete(playerTag)
+			reliableChans.DeletePlayerChan(playerTag)
+			unreliableChans.DeletePlayerChan(playerTag)
 
 			err := peerConnection.Close() //deletes all references to this peerconnection in mem and same for ICE agent (ICE agent releases the "closed" status)
 			if err != nil {               //https://www.w3.org/TR/webrtc/#dom-rtcpeerconnection-close
@@ -150,7 +146,8 @@ func echo(w http.ResponseWriter, r *http.Request) {
 		}
 
 		//add this channel's pointer to list so can broadcast messages to all players
-		reliableChans.Store(playerTag, reliableChannel)
+		reliableChans.AddPlayerChan(playerTag, reliableChannel)
+		unreliableChans.AddPlayerChan(playerTag, dataChannel)
 
 	})
 
