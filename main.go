@@ -20,13 +20,12 @@ import (
 
 // Game Updates Map
 var Updates sync.Map
-var UpdatesString string
 var NumberOfPlayers int
 
 // Maps of Datachannels for broadcasting or sending messages between players
 // DataChannelContainer in messaging.go
-var reliableChans DataChannelContainer
-var unreliableChans DataChannelContainer
+var reliableChans DataChannelContainer = DataChannelContainer{chans: make(map[string]*webrtc.DataChannel)}
+var unreliableChans DataChannelContainer = DataChannelContainer{chans: make(map[string]*webrtc.DataChannel)}
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool { return true },
@@ -113,6 +112,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	//====================No retransmits, ordered dataChannel=======================
 	// Register channel opening handling
 	dataChannel.OnOpen(func() {
+		/*
 		for {
 			time.Sleep(time.Millisecond * 50) //50 milliseconds = 20 updates per second
 			//20 milliseconds = ~60 updates per second
@@ -125,7 +125,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 		}
-
+		*/
 	})
 
 	// Register text message handling
@@ -286,11 +286,10 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 }
 
-//We'll have this marshalling function here so the multiple gorutines for each
-//player will not be inefficient by all trying to marshall the same thing
-func getSyncMapReadyForSending(m *sync.Map) {
+// Sends current game state unreliably to all players
+func sendGameStateUnreliableLoop(m *sync.Map) {
 	for {
-		time.Sleep(time.Millisecond)
+		time.Sleep(time.Millisecond * 50) //50 milliseconds = 20 updates per second
 
 		tmpMap := make(map[string]interface{})
 		m.Range(func(k, v interface{}) bool {
@@ -308,7 +307,7 @@ func getSyncMapReadyForSending(m *sync.Map) {
 			panic(err)
 		}
 
-		UpdatesString = string(jsonTemp)   // **** Make Concurrent safe with mutex (so read doesn't just get part of a string or not most current string?)		
+		unreliableChans.Broadcast(string(jsonTemp))
 	}
 }
 
@@ -359,7 +358,7 @@ func gameLoop() {
 
 func main() {
 
-	go getSyncMapReadyForSending(&Updates)
+	go sendGameStateUnreliableLoop(&Updates)
 	go gameLoop()
 
 	initGameVars()
