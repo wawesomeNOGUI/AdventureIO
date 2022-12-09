@@ -328,16 +328,16 @@ func gameLoop() {
 		Updates.Range(func(k, v interface{}) bool {
 			strayItems.Range(func(ki, vi interface{}) bool {
 				// d := math.Sqrt(math.Pow(v.(Player).X - vi.(Item).X - 5, 2) + math.Pow(v.(Player).Y - vi.(Item).Y - 2, 2))
-				dX := math.Abs(v.(Player).X + 2 - vi.(Item).X - 5)
-				dY := math.Abs(v.(Player).Y + 2 - vi.(Item).Y - 2)
+				dX := vi.(Item).X + 5 - v.(Player).X + 2 
+				dY := vi.(Item).Y - 2 - v.(Player).Y + 2
 
-				if dX < 8 && dY < 4 {
+				if math.Abs(dX) < 8 && math.Abs(dY) < 4 {
 					// pick up item
 					tmpItem := vi.(Item)
 					strayItems.Delete(ki)
 
-					tmpItem.X = v.(Player).X - tmpItem.X  // to offset Item from player
-					tmpItem.Y = v.(Player).Y - tmpItem.Y
+					tmpItem.X = dX * 2  // to offset Item from player
+					tmpItem.Y = dY * 2
 					tmpItem.Owner = k.(string); 
 
 					tmpPlayer := v.(Player)
