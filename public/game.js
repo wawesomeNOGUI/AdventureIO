@@ -30,7 +30,7 @@ var keysDown = {};     //This creates var for keysDown event
 
 //===================Sprites================================
 var swordSprite = new Image();
-    swordSprite.src = "sword.gif";
+    swordSprite.src = "sword.gif";  // 10 x 5 pixels
 //==========================================================
 
 // Player Vars
@@ -61,7 +61,7 @@ var render = function () {
 
           // Draw Player
           ctx.fillStyle = "#ecb0e0";
-          ctx.fillRect(Math.floor(x), Math.floor(y), 4, 4);
+          ctx.fillRect(Math.round(x), Math.round(y), 4, 4);
 
           // Draw Held Item
           if (Updates[key].Held.Kind == "sword") {
@@ -120,16 +120,16 @@ var keyPress = function() {
     var value = Number(key);
 
     if (value == 37) {   //37 = left
-      pX = pX - speed;
+      pX = Math.round(pX - speed);
       TCPChan.send("X" + pX);
     } else if (value == 39) {  //39 = right
-      pX = pX + speed;
+      pX = Math.round(pX + speed);
       TCPChan.send("X" + pX);
     } else if (value == 40) {  //40 = down
-      pY = pY + speed;
+      pY = Math.round(pY + speed);
       TCPChan.send("Y" + pY);
     } else if (value == 38) {  //38 = up
-      pY = pY - speed;
+      pY = Math.round(pY - speed);
       TCPChan.send("Y" + pY);
     }
   }

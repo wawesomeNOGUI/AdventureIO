@@ -22,7 +22,7 @@ import (
 var Updates sync.Map
 var NumberOfPlayers int
 
-// Maps of Datachannels for broadcasting or sending messages between players
+// Concurrent Safe Maps of Datachannels for broadcasting or sending messages between players
 // DataChannelContainer in messaging.go
 var reliableChans DataChannelContainer = DataChannelContainer{chans: make(map[string]*webrtc.DataChannel)}
 var unreliableChans DataChannelContainer = DataChannelContainer{chans: make(map[string]*webrtc.DataChannel)}
@@ -327,9 +327,11 @@ func gameLoop() {
 
 		Updates.Range(func(k, v interface{}) bool {
 			strayItems.Range(func(ki, vi interface{}) bool {
-				d := math.Sqrt(math.Pow(v.(Player).X - vi.(Item).X, 2) + math.Pow(v.(Player).Y - vi.(Item).Y, 2))
-			
-				if d < 5 {
+				// d := math.Sqrt(math.Pow(v.(Player).X - vi.(Item).X - 5, 2) + math.Pow(v.(Player).Y - vi.(Item).Y - 2, 2))
+				dX := math.Abs(v.(Player).X + 2 - vi.(Item).X - 5)
+				dY := math.Abs(v.(Player).Y + 2 - vi.(Item).Y - 2)
+
+				if dX < 8 && dY < 4 {
 					// pick up item
 					tmpItem := vi.(Item)
 					strayItems.Delete(ki)
