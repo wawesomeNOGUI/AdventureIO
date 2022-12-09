@@ -65,15 +65,15 @@ var render = function () {
 
           // Draw Held Item
           if (Updates[key].Held.Kind == "sword") {
-            ctx.drawImage(swordSprite, Math.floor(x + Updates[key].Held.X), Math.floor(y - Updates[key].Held.Y));
+            ctx.drawImage(swordSprite, Math.round(x + Updates[key].Held.X), Math.round(y + Updates[key].Held.Y));
           }
         } else if (Updates.hasOwnProperty(key) && key == playerTag) {
           //Local Player
           ctx.fillStyle = canvas.style.borderColor;
-          ctx.fillRect(Math.floor(pX), Math.floor(pY), 4, 4);
+          ctx.fillRect(Math.round(pX), Math.round(pY), 4, 4);
 
           if (Updates[playerTag].Held.Kind == "sword") {
-            ctx.drawImage(swordSprite, Math.floor(pX + Updates[key].Held.X), Math.floor(pY - Updates[key].Held.Y));
+            ctx.drawImage(swordSprite, Math.round(pX + Updates[key].Held.X), Math.round(pY + Updates[key].Held.Y));
           }
         }
       } else { // its an item
