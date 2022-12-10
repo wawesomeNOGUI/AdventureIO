@@ -1,1 +1,1 @@
-go build -ldflags "-w -s" main.go types.go messaging.go
+go build -ldflags "-w -s" main.go players.go items.go messaging.go

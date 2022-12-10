@@ -199,11 +199,14 @@ func echo(w http.ResponseWriter, r *http.Request) {
 				tmpItem.Y = tmpPlayer.Y + tmpItem.Y * 2
 				tmpItem.Owner = ""
 
-				strayItems.Store(tmpItem.Kind, tmpItem)
+				strayItems.AddItem(tmpItem.Kind, tmpItem)
 
 				tmpPlayer.Held = Item{}
 				Updates.Store(playerTag, tmpPlayer)
 			}
+		} else if msg.Data[0] == 'P' {
+			// Picked Up Item
+
 		}
 	})
 
@@ -297,10 +300,9 @@ func sendGameStateUnreliableLoop(m *sync.Map) {
 			return true
 		})
 
-		strayItems.Range(func(k, v interface{}) bool {
-			tmpMap[k.(string)] = v
-			return true
-		})
+		for k, v := range strayItems.GetItems() {
+			tmpMap[k] = v
+		}
 
 		jsonTemp, err := json.Marshal(tmpMap)
 		if err != nil {
@@ -312,12 +314,15 @@ func sendGameStateUnreliableLoop(m *sync.Map) {
 }
 
 // Game Vars
-var strayItems sync.Map  // will contain items that can be picked up by players
+
+// will contain items that can be picked up by players (mutex)
+// ItemContainer & Item defined in types.go
+var strayItems ItemContainer = ItemContainer{items: make(map[string]Item)}  
 //  var ownedItems sync.Map  // will contain items with the key being the playerTag who owns it
 // var sword Item = Item{20, 20, "", "sword"}
 
 func initGameVars() {
-	strayItems.Store("sword", Item{20, 20, "", "sword"})
+	strayItems.AddItem("sword", Item{20, 20, "", "sword"})
 }
 
 // All server orchestrated game logic
@@ -326,15 +331,15 @@ func gameLoop() {
 		time.Sleep(time.Millisecond * 15)
 
 		Updates.Range(func(k, v interface{}) bool {
-			strayItems.Range(func(ki, vi interface{}) bool {
+			for _, vi := range strayItems.GetItems() {
 				// d := math.Sqrt(math.Pow(v.(Player).X - vi.(Item).X - 5, 2) + math.Pow(v.(Player).Y - vi.(Item).Y - 2, 2))
-				dX := vi.(Item).X + 5 - v.(Player).X + 2 
-				dY := vi.(Item).Y - 2 - v.(Player).Y + 2
+				dX := vi.X + 5 - v.(Player).X + 2 
+				dY := vi.Y - 2 - v.(Player).Y + 2
 
 				if math.Abs(dX) < 8 && math.Abs(dY) < 4 {
 					// pick up item
-					tmpItem := vi.(Item)
-					strayItems.Delete(ki)
+					tmpItem := vi
+					//strayItems.Delete(ki)
 
 					tmpItem.X = dX * 2  // to offset Item from player
 					tmpItem.Y = dY * 2
@@ -343,14 +348,12 @@ func gameLoop() {
 					tmpPlayer := v.(Player)
 					tmpPlayer.Held = tmpItem;
 
-					Updates.Store(k, tmpPlayer)
+					//Updates.Store(k, tmpPlayer)
 					// ownedItems.Store(ki, tmpItem)
 
-					return false // If f returns false, range stops the iteration.
+					break
 				}
-
-				return true
-			})
+			}
 
 			return true   
 			// return false	// If f returns false, range stops the iteration. 
