@@ -199,7 +199,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 				tmpItem.Y = tmpPlayer.Y + tmpItem.Y * 2
 				tmpItem.Owner = ""
 
-				strayItems.AddItem(tmpItem.Kind, tmpItem)
+				strayItems.StoreItem(tmpItem.Kind, tmpItem)
 
 				tmpPlayer.Held = Item{}
 				Updates.Store(playerTag, tmpPlayer)
@@ -322,7 +322,7 @@ var strayItems ItemContainer = ItemContainer{items: make(map[string]Item)}
 // var sword Item = Item{20, 20, "", "sword"}
 
 func initGameVars() {
-	strayItems.AddItem("sword", Item{20, 20, "", "sword"})
+	strayItems.StoreItem("sword", Item{20, 20, "", "sword"})
 }
 
 // All server orchestrated game logic
@@ -349,7 +349,7 @@ func gameLoop() {
 					tmpPlayer.Held = tmpItem;
 
 					//Updates.Store(k, tmpPlayer)
-					// ownedItems.Store(ki, tmpItem)
+					//ownedItems.Store(ki, tmpItem)
 
 					break
 				}

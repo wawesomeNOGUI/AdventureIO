@@ -2,7 +2,6 @@ package main
 
 import (
 	"sync"
-	"fmt"
 )
 
 // Generic structs and methods for items
@@ -20,7 +19,7 @@ type ItemContainer struct {
 	items map[string]Item
 }
 
-func (c *ItemContainer) AddItem(k string, v Item) {
+func (c *ItemContainer) StoreItem(k string, v Item) {
 	c.mu.Lock()
     defer c.mu.Unlock()
 
