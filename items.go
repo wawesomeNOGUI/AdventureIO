@@ -61,14 +61,16 @@ func (c *ItemContainer) isItemHere(x, y float64) (bool, string) {
 	return false, ""
 } 
 
-func (c *ItemContainer) TryPickUpItem(o *ItemContainer, x, y float64) (bool, string) {
+func (c *ItemContainer) TryPickUpItem(o *ItemContainer, pTag string, x, y float64) (bool, string) {
 	c.mu.Lock()
     defer c.mu.Unlock()
 
 	itemHere, itemKey := c.isItemHere(x, y)
 
 	if itemHere {
-		o.StoreItem(itemKey, c.items[itemKey])
+		tmpItem := c.items[itemKey]
+		tmpItem.Owner = pTag
+		o.StoreItem(itemKey, tmpItem)
 
 		delete(c.items, itemKey)
 		return true, itemKey

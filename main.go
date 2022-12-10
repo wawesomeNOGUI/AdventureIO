@@ -219,7 +219,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 				fmt.Println(err)
 			}
 
-			itemHere, itemKey := strayItems.TryPickUpItem(&ownedItems, hitX, hitY)
+			itemHere, itemKey := strayItems.TryPickUpItem(&ownedItems, playerTag, hitX, hitY)
 			
 			if itemHere {
 				fmt.Println(itemKey)
