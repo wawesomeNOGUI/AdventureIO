@@ -39,7 +39,7 @@ func (c *ItemContainer) GetItems() map[string]Item {
     defer c.mu.Unlock()
 
 	tmpMap := make(map[string]Item)
-	for k, v := range strayItems.items {
+	for k, v := range c.items {
 		tmpMap[k] = v
 	}
 

@@ -219,13 +219,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 				fmt.Println(err)
 			}
 
-			itemHere, itemKey := strayItems.TryPickUpItem(&ownedItems, playerTag, hitX, hitY)
-			
-			if itemHere {
-				fmt.Println(itemKey)
-				fmt.Println(strayItems)
-				fmt.Println(ownedItems)
-			}
+			strayItems.TryPickUpItem(&ownedItems, playerTag, hitX, hitY)
 		}
 	})
 
@@ -322,6 +316,12 @@ func sendGameStateUnreliableLoop(m *sync.Map) {
 		for k, v := range strayItems.GetItems() {
 			tmpMap[k] = v
 		}
+
+		for k, v := range ownedItems.GetItems() {
+			tmpMap[k] = v
+		}
+
+		fmt.Println(ownedItems.GetItems())
 
 		jsonTemp, err := json.Marshal(tmpMap)
 		if err != nil {
