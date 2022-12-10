@@ -88,21 +88,12 @@ var render = function () {
         // Draw Player
         ctx.fillStyle = "#ecb0e0";
         ctx.fillRect(Math.round(x), Math.round(y), 4, 4);
-
-        // Draw Held Item
-        if (Updates[key].Held.Kind == "sword") {
-          ctx.drawImage(swordSprite, Math.round(x + Updates[key].Held.X), Math.round(y + Updates[key].Held.Y));
-        }
       } else if (key == playerTag) {
         //Local Player
         ctx.fillStyle = pColor;
         ctx.fillRect(Math.round(pX), Math.round(pY), 4, 4);
-
-        if (Updates[playerTag].Held.Kind == "sword") {
-          ctx.drawImage(swordSprite, Math.round(pX + Updates[key].Held.X), Math.round(pY + Updates[key].Held.Y));
-        }
       }
-    } else { // its a stray item
+    } else { // its an item
       if (Updates[key].Kind == "sword") {
         ctx.drawImage(swordSprite, Updates[key].X, Updates[key].Y);
       }
@@ -111,7 +102,7 @@ var render = function () {
 
   // If local player not holding item do Item hit detection
   // if item goes inside player, pick up item
-  if (Updates[playerTag].Held.Kind == "" && checkForPixelPerfectHit()) {
+  if (Updates[playerTag].Held == "" && checkForPixelPerfectHit()) {
     TCPChan.send("P" + hitX + "," + hitY);
   }
 }
