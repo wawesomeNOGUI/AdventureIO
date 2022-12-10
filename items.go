@@ -32,8 +32,6 @@ func (c *ItemContainer) DeleteItem(k string) {
     defer c.mu.Unlock()
 
 	delete(c.items, k)
-
-	fmt.Println(c.items)
 }
 
 func (c *ItemContainer) GetItems() map[string]Item {
