@@ -37,55 +37,84 @@ var swordSprite = new Image();
 var pX = 50;
 var pY = 50;
 var speed = 0.75;
+var pColor = canvas.style.borderColor;
+var imgData;
 
 // World Vars
 var items = [];
+
+var hitX;
+var hitY;
+function checkForPixelPerfectHit() {
+  imgData = ctx.getImageData(pX, pY, 4, 4);
+  var pColorRGB = pColor.match(/\d+/g);   // gets rgb values from css "rgb(xxx, xxx, xxx)"
+  var i = 0;
+
+  for (var y = 0; y < imgData.height; y++) {
+    for (var x = 0; x < imgData.width; x++) {
+      if (pColorRGB[0] != imgData.data[i] && pColorRGB[1] != imgData.data[i+1] && pColorRGB[2] != imgData.data[i+2] ) {
+        hitX = pX + x;
+        hitY = pY + y;
+        return true;
+      } 
+
+      i += 4;
+    }
+  }
+
+  return false;
+}
 
 //Render using the NTSC Atari 2600 pallete
 //https://en.wikipedia.org/wiki/List_of_video_game_console_palettes#Atari_2600
 //(inspect element to get the hex color values from the atari color table)
 var render = function () {
+  if (Updates == undefined) {
+    return;
+  }
 
-   ctx.fillStyle = "#000000";
-   ctx.fillRect(0, 0, width, height);
+  ctx.fillStyle = "#000000";
+  ctx.fillRect(0, 0, width, height);
 
-   //Draw Players
-   t += interpolateInc;
+   //Draw Players And Items
+  t += interpolateInc;
 
-  for (var key in Updates) {     //Updates defined in index.html
-    if (Updates.hasOwnProperty(key)) {
-      if (Number(key)) {  // then its a player
-        if (key != playerTag && previousUpdate != undefined && previousUpdate.hasOwnProperty(key))  {
-          var x = smoothstep(previousUpdate[key].X, Updates[key].X, t);
-          var y = smoothstep(previousUpdate[key].Y, Updates[key].Y, t);
+  for (var key in Updates) {     //Updates defined in index.html  
+    if (Number(key)) {  // then its a player
+      if (key != playerTag && previousUpdate != undefined && previousUpdate.hasOwnProperty(key))  {
+        var x = smoothstep(previousUpdate[key].X, Updates[key].X, t);
+        var y = smoothstep(previousUpdate[key].Y, Updates[key].Y, t);
 
-          // Draw Player
-          ctx.fillStyle = "#ecb0e0";
-          ctx.fillRect(Math.round(x), Math.round(y), 4, 4);
+        // Draw Player
+        ctx.fillStyle = "#ecb0e0";
+        ctx.fillRect(Math.round(x), Math.round(y), 4, 4);
 
-          // Draw Held Item
-          if (Updates[key].Held.Kind == "sword") {
-            ctx.drawImage(swordSprite, Math.round(x + Updates[key].Held.X), Math.round(y + Updates[key].Held.Y));
-          }
-        } else if (Updates.hasOwnProperty(key) && key == playerTag) {
-          //Local Player
-          ctx.fillStyle = canvas.style.borderColor;
-          ctx.fillRect(Math.round(pX), Math.round(pY), 4, 4);
-
-          if (Updates[playerTag].Held.Kind == "sword") {
-            ctx.drawImage(swordSprite, Math.round(pX + Updates[key].Held.X), Math.round(pY + Updates[key].Held.Y));
-          }
+        // Draw Held Item
+        if (Updates[key].Held.Kind == "sword") {
+          ctx.drawImage(swordSprite, Math.round(x + Updates[key].Held.X), Math.round(y + Updates[key].Held.Y));
         }
-      } else { // its an item
-        if (Updates[key].Kind == "sword") {
-          ctx.drawImage(swordSprite, Updates[key].X, Updates[key].Y);
+      } else if (key == playerTag) {
+        //Local Player
+        ctx.fillStyle = pColor;
+        ctx.fillRect(Math.round(pX), Math.round(pY), 4, 4);
+
+        if (Updates[playerTag].Held.Kind == "sword") {
+          ctx.drawImage(swordSprite, Math.round(pX + Updates[key].Held.X), Math.round(pY + Updates[key].Held.Y));
         }
+      }
+    } else { // its a stray item
+      if (Updates[key].Kind == "sword") {
+        ctx.drawImage(swordSprite, Updates[key].X, Updates[key].Y);
       }
     }
   }
 
+  // If local player not holding item do Item hit detection
+  // if item goes inside player, pick up item
+  if (Updates[playerTag].Held.Kind == "" && checkForPixelPerfectHit()) {
+    TCPChan.send("P" + hitX + "," + hitY);
+  }
 }
-
 
 var update = function() {
   keyPress();
@@ -106,7 +135,6 @@ var update = function() {
       //Wall
       pY = canvas.height - 6;
   }
-
 };
 
 var step = function() {
