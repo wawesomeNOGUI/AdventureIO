@@ -94,7 +94,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			fmt.Println(playerTag)
 
 			//Store a slice for player x, y, and other data (player{x float64, y float64, holding item})
-			Updates.Store(playerTag, Player{50, 50, Item{}})
+			Updates.Store(playerTag, Player{50, 50, ""})
 
 		} else if connectionState == 5 || connectionState == 6 || connectionState == 7 {
 			Updates.Delete(playerTag)
@@ -194,15 +194,15 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			Updates.Store(playerTag, tmpPlayer)
 		} else if msg.Data[0] == 'D' {
 			//dropped item
-			if tmpPlayer.Held.Kind != "" {
-				tmpItem := tmpPlayer.Held
+			if tmpPlayer.Held != "" {
+				tmpItem := ownedItems.DeleteItem(tmpPlayer.Held)
 				tmpItem.X = tmpPlayer.X + tmpItem.X * 2
 				tmpItem.Y = tmpPlayer.Y + tmpItem.Y * 2
 				tmpItem.Owner = ""
 
 				strayItems.StoreItem(tmpItem.Kind, tmpItem)
 
-				tmpPlayer.Held = Item{}
+				tmpPlayer.Held = ""
 				Updates.Store(playerTag, tmpPlayer)
 			}
 		} else if msg.Data[0] == 'P' {
@@ -219,7 +219,11 @@ func echo(w http.ResponseWriter, r *http.Request) {
 				fmt.Println(err)
 			}
 
-			strayItems.TryPickUpItem(&ownedItems, playerTag, hitX, hitY)
+			gotItem, itemKey := strayItems.TryPickUpItem(&ownedItems, playerTag, hitX, hitY)
+
+			if gotItem {
+				tmpPlayer.Held = itemKey
+			}
 		}
 	})
 
@@ -320,8 +324,6 @@ func sendGameStateUnreliableLoop(m *sync.Map) {
 		for k, v := range ownedItems.GetItems() {
 			tmpMap[k] = v
 		}
-
-		fmt.Println(ownedItems.GetItems())
 
 		jsonTemp, err := json.Marshal(tmpMap)
 		if err != nil {

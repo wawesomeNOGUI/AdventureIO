@@ -5,5 +5,5 @@ package main
 type Player struct {
 	X float64
 	Y float64
-	Held Item
+	Held string  // string representing the key for an item in ownedItems
 }
