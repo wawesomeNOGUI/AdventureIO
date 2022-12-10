@@ -6,9 +6,10 @@ import (
 	"net"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
-	"math"
+	//"math"
 	//"reflect"
 	//"encoding/binary"
 
@@ -206,7 +207,25 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			}
 		} else if msg.Data[0] == 'P' {
 			// Picked Up Item
+			sX := string(msg.Data[1:strings.Index(string(msg.Data), ",")])
+			sY := string(msg.Data[strings.Index(string(msg.Data), ",") + 1:])
 
+			hitX, err := strconv.ParseFloat(sX, 64)
+			if err != nil {
+				fmt.Println(err)
+			}
+			hitY, err := strconv.ParseFloat(sY, 64) 
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			itemHere, itemKey := strayItems.TryPickUpItem(&ownedItems, hitX, hitY)
+			
+			if itemHere {
+				fmt.Println(itemKey)
+				fmt.Println(strayItems)
+				fmt.Println(ownedItems)
+			}
 		}
 	})
 
@@ -317,9 +336,10 @@ func sendGameStateUnreliableLoop(m *sync.Map) {
 
 // will contain items that can be picked up by players (mutex)
 // ItemContainer & Item defined in types.go
-var strayItems ItemContainer = ItemContainer{items: make(map[string]Item)}  
-//  var ownedItems sync.Map  // will contain items with the key being the playerTag who owns it
-// var sword Item = Item{20, 20, "", "sword"}
+var strayItems ItemContainer = ItemContainer{items: make(map[string]Item)} 
+
+// will contain items with the key being the item, and each item has an Owner tag set to the playerTag who owns it
+var ownedItems ItemContainer = ItemContainer{items: make(map[string]Item)} 
 
 func initGameVars() {
 	strayItems.StoreItem("sword", Item{20, 20, "", "sword"})
@@ -331,6 +351,7 @@ func gameLoop() {
 		time.Sleep(time.Millisecond * 15)
 
 		Updates.Range(func(k, v interface{}) bool {
+			/*
 			for ki, vi := range strayItems.GetItems() {
 				// d := math.Sqrt(math.Pow(v.(Player).X - vi.(Item).X - 5, 2) + math.Pow(v.(Player).Y - vi.(Item).Y - 2, 2))
 				dX := vi.X + 5 - v.(Player).X + 2 
@@ -354,6 +375,7 @@ func gameLoop() {
 					break
 				}
 			}
+			*/
 
 			return true   
 			// return false	// If f returns false, range stops the iteration. 

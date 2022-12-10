@@ -2,6 +2,7 @@ package main
 
 import (
 	"sync"
+	"math"
 )
 
 // Generic structs and methods for items
@@ -43,4 +44,35 @@ func (c *ItemContainer) GetItems() map[string]Item {
 	}
 
 	return tmpMap
+}
+
+func (c *ItemContainer) isItemHere(x, y float64) (bool, string) {
+	// c.mu.Lock()
+    // defer c.mu.Unlock()
+
+	for k, v := range strayItems.items {
+		d := math.Sqrt(math.Pow(x - v.X, 2) + math.Pow(y - v.Y, 2))
+
+		if d < 10 {
+			return true, k
+		}
+	}
+
+	return false, ""
+} 
+
+func (c *ItemContainer) TryPickUpItem(o *ItemContainer, x, y float64) (bool, string) {
+	c.mu.Lock()
+    defer c.mu.Unlock()
+
+	itemHere, itemKey := c.isItemHere(x, y)
+
+	if itemHere {
+		o.StoreItem(itemKey, c.items[itemKey])
+
+		delete(c.items, itemKey)
+		return true, itemKey
+	}
+
+	return false, ""
 }
