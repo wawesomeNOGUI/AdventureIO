@@ -223,6 +223,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 			if gotItem {
 				tmpPlayer.Held = itemKey
+				Updates.Store(playerTag, tmpPlayer)
 			}
 		}
 	})

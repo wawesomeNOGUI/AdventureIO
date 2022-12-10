@@ -88,7 +88,7 @@ func (c *ItemContainer) TryPickUpItem(o *ItemContainer, pTag string, x, y float6
 	if itemHere {
 		tmpItem := c.items[itemKey]
 		tmpItem.Owner = pTag
-		o.StoreItem(itemKey, tmpItem)
+		o.items[itemKey] = tmpItem
 
 		delete(c.items, itemKey)
 		return true, itemKey
