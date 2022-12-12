@@ -210,13 +210,10 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			//dropped item
 			if tmpPlayer.Held != "" {
 				tmpItem := ownedItems.DeleteItem(tmpPlayer.Held)
-				tmpItem.X = tmpPlayer.X + tmpItem.X * 2
-				tmpItem.Y = tmpPlayer.Y + tmpItem.Y * 2
 				tmpItem.Owner = ""
+				tmpPlayer.Held = ""
 
 				strayItems.StoreItem(tmpItem.Kind, tmpItem)
-
-				tmpPlayer.Held = ""
 				Updates.Store(playerTag, tmpPlayer)
 			}
 		} else if msg.Data[0] == 'P' {
