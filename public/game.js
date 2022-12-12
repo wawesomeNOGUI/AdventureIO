@@ -45,6 +45,7 @@ var items = [];
 
 var hitX;
 var hitY;
+var hitDirection;
 function checkForPixelPerfectHit() {
   imgData = ctx.getImageData(pX, pY, 4, 4);
   var pColorRGB = pColor.match(/\d+/g);   // gets rgb values from css "rgb(xxx, xxx, xxx)"
@@ -55,6 +56,20 @@ function checkForPixelPerfectHit() {
       if (pColorRGB[0] != imgData.data[i] && pColorRGB[1] != imgData.data[i+1] && pColorRGB[2] != imgData.data[i+2] ) {
         hitX = pX + x;
         hitY = pY + y;
+
+        hitDirection = "";
+        if (keysDown[37]) {  // left
+          hitDirection = "l";
+        } else if (keysDown[39]) { // right
+          hitDirection = "r";
+        }
+
+        if (keysDown[40]) { // down
+          hitDirection += "d";
+        } else if (keysDown[38]) {  // up
+          hitDirection += "u";
+        }
+
         return true;
       } 
 
@@ -103,7 +118,7 @@ var render = function () {
   // If local player not holding item do Item hit detection
   // if item goes inside player, pick up item
   if (Updates[playerTag].Held == "" && checkForPixelPerfectHit()) {
-    TCPChan.send("P" + hitX + "," + hitY);
+    TCPChan.send("P" + hitX + "," + hitY + "," + hitDirection);
   }
 }
 
