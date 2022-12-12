@@ -84,7 +84,7 @@ function checkForPixelPerfectHit() {
 //https://en.wikipedia.org/wiki/List_of_video_game_console_palettes#Atari_2600
 //(inspect element to get the hex color values from the atari color table)
 var render = function () {
-  if (Updates == undefined) {
+  if (Updates == undefined || previousUpdate == undefined) {
     return;
   }
 
@@ -96,7 +96,7 @@ var render = function () {
 
   for (var key in Updates) {     //Updates defined in index.html  
     if (Number(key)) {  // then its a player
-      if (key != playerTag && previousUpdate != undefined && previousUpdate.hasOwnProperty(key))  {
+      if (key != playerTag && previousUpdate.hasOwnProperty(key))  {
         var x = smoothstep(previousUpdate[key].X, Updates[key].X, t);
         var y = smoothstep(previousUpdate[key].Y, Updates[key].Y, t);
 
@@ -106,11 +106,19 @@ var render = function () {
       } else if (key == playerTag) {
         //Local Player
         ctx.fillStyle = pColor;
-        ctx.fillRect(Math.round(pX), Math.round(pY), 4, 4);
+        ctx.fillRect(pX, pY, 4, 4);
       }
-    } else { // its an item
+    } else if (previousUpdate.hasOwnProperty(key)) { // its an item
       if (Updates[key].Kind == "sword") {
-        ctx.drawImage(swordSprite, Updates[key].X, Updates[key].Y);
+        if (Updates[key].Owner != playerTag) {
+          var x = smoothstep(previousUpdate[key].X, Updates[key].X, t);
+          var y = smoothstep(previousUpdate[key].Y, Updates[key].Y, t);
+  
+          ctx.drawImage(swordSprite, Math.round(x), Math.round(y));
+        } else {
+          // Draw local player's item
+          ctx.drawImage(swordSprite, pX + Math.round(ownedItemXYOffset[0]), pY + Math.round(ownedItemXYOffset[1]));
+        }
       }
     }
   }

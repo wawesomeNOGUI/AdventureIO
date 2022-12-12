@@ -257,6 +257,10 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 				ownedItems.StoreItem(itemKey, tmpItem)
 				Updates.Store(playerTag, tmpPlayer)
+
+				// Send this player the item offset so they can render it with no delay clientside
+				str := "I" + fmt.Sprintf("%.1f", tmpItem.X-tmpPlayer.X)  + "," + fmt.Sprintf("%.1f", tmpItem.Y-tmpPlayer.Y)
+				reliableChans.SendToPlayer(playerTag, str)
 			}
 		}
 	})
