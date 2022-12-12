@@ -175,6 +175,13 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			} else if x > 154 {
 				x = 154
 			}	
+
+			// Move Owned Item
+			if tmpPlayer.Held != "" {
+				tmpItem := ownedItems.LoadItem(tmpPlayer.Held)
+				tmpItem.X += x - tmpPlayer.X
+				ownedItems.StoreItem(tmpPlayer.Held, tmpItem)
+			}
 			
 			tmpPlayer.X = x
 			Updates.Store(playerTag, tmpPlayer)
@@ -188,6 +195,13 @@ func echo(w http.ResponseWriter, r *http.Request) {
 				y = 2
 			} else if y > 99 {
 				y = 99
+			}
+
+			// Move Owned Item
+			if tmpPlayer.Held != "" {
+				tmpItem := ownedItems.LoadItem(tmpPlayer.Held)
+				tmpItem.Y += y - tmpPlayer.Y 
+				ownedItems.StoreItem(tmpPlayer.Held, tmpItem)
 			}
 
 			tmpPlayer.Y = y
@@ -207,8 +221,11 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			}
 		} else if msg.Data[0] == 'P' {
 			// Picked Up Item
-			sX := string(msg.Data[1:strings.Index(string(msg.Data), ",")])
-			sY := string(msg.Data[strings.Index(string(msg.Data), ",") + 1:])
+			msg.Data = msg.Data[1:]
+			dataSlice := strings.Split(string(msg.Data), ",")
+			sX := dataSlice[0]
+			sY := dataSlice[1]
+			sDir := dataSlice[2]
 
 			hitX, err := strconv.ParseFloat(sX, 64)
 			if err != nil {
@@ -223,6 +240,22 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 			if gotItem {
 				tmpPlayer.Held = itemKey
+
+				tmpItem := ownedItems.LoadItem(itemKey)
+
+				if sDir[0] == 'l' {
+					tmpItem.X -= 4
+				} else if sDir[0] == 'r' {
+					tmpItem.X += 4
+				}
+
+				if strings.Contains(sDir, "u") {
+					tmpItem.Y -= 4
+				} else if strings.Contains(sDir, "d") {
+					tmpItem.Y += 4
+				}
+
+				ownedItems.StoreItem(itemKey, tmpItem)
 				Updates.Store(playerTag, tmpPlayer)
 			}
 		}
