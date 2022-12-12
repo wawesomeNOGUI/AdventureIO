@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"os"
 	//"math"
 	//"reflect"
 	//"encoding/binary"
@@ -210,13 +211,14 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			//dropped item
 			if tmpPlayer.Held != "" {
 				tmpItem := ownedItems.DeleteItem(tmpPlayer.Held)
+				k := tmpPlayer.Held
 				tmpItem.Owner = ""
 				tmpPlayer.Held = ""
 
-				strayItems.StoreItem(tmpItem.Kind, tmpItem)
+				strayItems.StoreItem(k, tmpItem)
 				Updates.Store(playerTag, tmpPlayer)
 			}
-		} else if msg.Data[0] == 'P' {
+		} else if msg.Data[0] == 'P' && tmpPlayer.Held == "" {
 			// Picked Up Item
 			msg.Data = msg.Data[1:]
 			dataSlice := strings.Split(string(msg.Data), ",")
@@ -378,8 +380,13 @@ var strayItems ItemContainer = ItemContainer{items: make(map[string]Item)}
 // will contain items with the key being the item, and each item has an Owner tag set to the playerTag who owns it
 var ownedItems ItemContainer = ItemContainer{items: make(map[string]Item)} 
 
+var itemData []Item
 func initGameVars() {
-	strayItems.StoreItem("sword", Item{20, 20, "", "sword"})
+	for i := 0; i < len(itemData); i++ {
+		strayItems.StoreItem(itemData[i].Kind + strconv.Itoa(i), itemData[i])
+	}
+
+	fmt.Println(strayItems.GetItems())
 }
 
 // All server orchestrated game logic
@@ -421,11 +428,19 @@ func gameLoop() {
 }
 
 func main() {
+	dat, err := os.ReadFile("./gameData/itemData.json")
+	if err != nil {
+		panic(err)
+	}
+
+	if err := json.Unmarshal(dat, &itemData); err != nil {
+		panic(err)
+	}
+
+	initGameVars()
 
 	go sendGameStateUnreliableLoop(&Updates)
 	go gameLoop()
-
-	initGameVars()
 
 	// Listen on UDP Port 80, will be used for all WebRTC traffic
 	udpListener, err := net.ListenUDP("udp", &net.UDPAddr{
