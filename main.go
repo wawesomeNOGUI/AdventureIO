@@ -222,6 +222,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			// Picked Up Item
 			msg.Data = msg.Data[1:]
 			dataSlice := strings.Split(string(msg.Data), ",")
+			
 			sX := dataSlice[0]
 			sY := dataSlice[1]
 			sDir := dataSlice[2]
@@ -242,6 +243,11 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 				tmpItem := ownedItems.LoadItem(itemKey)
 
+				if sDir == "" {
+					sDir = "l"
+					tmpItem.X = tmpPlayer.X - 10
+					tmpItem.Y = tmpPlayer.Y
+				}
 				if sDir[0] == 'l' {
 					tmpItem.X -= 4
 				} else if sDir[0] == 'r' {
