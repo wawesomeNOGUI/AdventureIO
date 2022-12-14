@@ -30,7 +30,10 @@ var keysDown = {};     //This creates var for keysDown event
 
 //===================Sprites================================
 var swordSprite = new Image();
-    swordSprite.src = "sword.gif";  // 10 x 5 pixels
+    swordSprite.src = "sprites/sword.gif";  // 10 x 5 pixels
+
+var keySprite = new Image();
+    keySprite.src = "sprites/key.gif";
 //==========================================================
 
 // Player Vars
@@ -88,7 +91,7 @@ var render = function () {
     return;
   }
 
-  ctx.fillStyle = "#000000";
+  ctx.fillStyle = "#b0b0b0";
   ctx.fillRect(0, 0, width, height);
 
    //Draw Players And Items
@@ -117,7 +120,8 @@ var render = function () {
           ctx.drawImage(swordSprite, Math.round(x), Math.round(y));
         } else {
           // Draw local player's item
-          ctx.drawImage(swordSprite, pX + Math.round(ownedItemXYOffset[0]), pY + Math.round(ownedItemXYOffset[1]));
+          //ctx.drawImage(swordSprite, pX + Math.round(ownedItemXYOffset[0]), pY + Math.round(ownedItemXYOffset[1]));
+          drawColorSprite(ctx, keySprite, "#FF00FF", pX + Math.round(ownedItemXYOffset[0]), pY + Math.round(ownedItemXYOffset[1]));
         }
       }
     }
