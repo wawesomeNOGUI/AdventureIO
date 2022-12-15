@@ -34,6 +34,28 @@ var swordSprite = new Image();
 
 var keySprite = new Image();
     keySprite.src = "sprites/key.gif";
+
+var batSprite0 = new Image();
+    batSprite0.src = "sprites/bat_0.png";
+
+var batSprite1 = new Image();
+    batSprite1.src = "sprites/bat_1.png";
+
+var spriteMap = {
+  "sword": swordSprite,
+  "key": keySprite,
+  "bat": batSprite0
+}
+
+var spriteAnimationInterval = setInterval(function(){
+  //Bat Animation
+  if (spriteMap["bat"] = batSprite0) {
+    spriteMap["bat"] = batSprite1;
+  } else {
+    spriteMap["bat"] = batSprite0;
+  }
+  
+}, 700)
 //==========================================================
 
 // Player Vars
