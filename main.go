@@ -350,16 +350,23 @@ func echo(w http.ResponseWriter, r *http.Request) {
 }
 
 // Sends current game state unreliably to all players
-func sendGameStateUnreliableLoop(m *sync.Map) {
+func sendGameStateUnreliableLoop() {
 	for {
 		time.Sleep(time.Millisecond * 50) //50 milliseconds = 20 updates per second
 
+		// Players
 		tmpMap := make(map[string]interface{})
-		m.Range(func(k, v interface{}) bool {
+		Updates.Range(func(k, v interface{}) bool {
 			tmpMap[k.(string)] = v.(Player)
 			return true
 		})
 
+		// Entities
+		for k, v := range entities.GetEntities() {
+			tmpMap[k] = v
+		}
+
+		// Items
 		for k, v := range strayItems.GetItems() {
 			tmpMap[k] = v
 		}
@@ -382,23 +389,32 @@ func sendGameStateUnreliableLoop(m *sync.Map) {
 // will contain items that can be picked up by players (mutex)
 // ItemContainer & Item defined in types.go
 var strayItems ItemContainer = ItemContainer{items: make(map[string]Item)} 
-
 // will contain items with the key being the item, and each item has an Owner tag set to the playerTag who owns it
-var ownedItems ItemContainer = ItemContainer{items: make(map[string]Item)} 
+var ownedItems ItemContainer = ItemContainer{items: make(map[string]Item)}
 
+var entities EntityContainer = EntityContainer{entities: make(map[string]Entity)}
+
+var entityData []Entity
 var itemData []Item
 func initGameVars() {
 	for i := 0; i < len(itemData); i++ {
 		strayItems.StoreItem(itemData[i].Kind + strconv.Itoa(i), itemData[i])
 	}
 
-	fmt.Println(strayItems.GetItems())
+	for i := 0; i < len(entityData); i++ {
+		if entityData[i].Kind == "bat" {
+			entityData[i].behaviorFunc = batBehaviorFunc
+		} else if entityData[i].Kind == "drg" {
+			entityData[i].behaviorFunc = dragonBehaviorFunc
+		}
+		entities.StoreEntity(entityData[i].Kind + strconv.Itoa(i), entityData[i])
+	}
 }
 
 // All server orchestrated game logic
 func gameLoop() {
 	for {
-		time.Sleep(time.Millisecond * 15)
+		time.Sleep(time.Millisecond * 16)  // Little faster than 60 updates per second
 
 		Updates.Range(func(k, v interface{}) bool {
 			/*
@@ -430,6 +446,13 @@ func gameLoop() {
 			return true   
 			// return false	// If f returns false, range stops the iteration. 
 		})
+
+		// Update Entities
+		for k, v := range entities.GetEntities() {
+			v.behaviorFunc(&v)
+			entities.StoreEntity(k, v)
+		}
+
 	}
 }
 
@@ -443,9 +466,18 @@ func main() {
 		panic(err)
 	}
 
+	dat, err = os.ReadFile("./gameData/entityData.json")
+	if err != nil {
+		panic(err)
+	}
+
+	if err := json.Unmarshal(dat, &entityData); err != nil {
+		panic(err)
+	}
+
 	initGameVars()
 
-	go sendGameStateUnreliableLoop(&Updates)
+	go sendGameStateUnreliableLoop()
 	go gameLoop()
 
 	// Listen on UDP Port 80, will be used for all WebRTC traffic
@@ -464,7 +496,7 @@ func main() {
 
 	//Our Public Candidate is declared here cause we're not using a STUN server for discovery
 	//and just hardcoding the open port, and port forwarding webrtc traffic on the router
-	settingEngine.SetNAT1To1IPs([]string{}, webrtc.ICECandidateTypeHost)
+	settingEngine.SetNAT1To1IPs([]string{"162.200.58.171"}, webrtc.ICECandidateTypeHost)
 
 	// Configure our SettingEngine to use our UDPMux. By default a PeerConnection has
 	// no global state. The API+SettingEngine allows the user to share state between them.
