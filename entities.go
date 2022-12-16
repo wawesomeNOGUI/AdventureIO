@@ -7,6 +7,7 @@ import "sync"
 type Entity struct {
 	X float64
 	Y float64
+	s float64   // speed, how much can move each update (not exported)
 	Kind string // what kind of entity
 	Held string // key of item the entity holds
 	behaviorFunc func(*Entity)
@@ -55,6 +56,11 @@ func (c *EntityContainer) GetEntities() map[string]Entity {
 }
 
 //==================Bats=======================
+func (e *Entity) initializeBat() {
+	e.s = 0.5
+	e.behaviorFunc = batBehaviorFunc
+}
+
 func batBehaviorFunc(e *Entity) {
 	e.X++
 	e.Y++
@@ -71,8 +77,12 @@ func batBehaviorFunc(e *Entity) {
 		e.Y = 99
 	}
 }
-
 //==================Dragons====================
+func (e *Entity) initializeDragon() {
+	e.s = 0.25
+	e.behaviorFunc = dragonBehaviorFunc
+}
+
 func dragonBehaviorFunc(e *Entity) {
 
 }

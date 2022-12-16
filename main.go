@@ -452,12 +452,14 @@ func initGameVars() {
 
 	for i := 0; i < len(entityData); i++ {
 		if entityData[i].Kind == "bat" {
-			entityData[i].behaviorFunc = batBehaviorFunc
+			entityData[i].initializeBat()
 		} else if entityData[i].Kind == "drg" {
-			entityData[i].behaviorFunc = dragonBehaviorFunc
+			entityData[i].initializeDragon()  
 		}
 		entities.StoreEntity(entityData[i].Kind + strconv.Itoa(i), entityData[i])
 	}
+
+	fmt.Println(entities.GetEntities())
 }
 
 // All server orchestrated game logic
