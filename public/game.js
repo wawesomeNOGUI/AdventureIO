@@ -183,42 +183,61 @@ var step = function() {
   animate(step);
 };
 
+/*
+// For being able to check validity / game state it is nice to send player movement reliably
+// Cause then the server can check each update, but it might be fine to use the ordered,
+// no resend dataChannel cause it will presumably be faster (no head of line blocking),
+// and we can at least check validity of latest move
+var sendToServerInterval = setInterval(function(){
+  TCPChan.send("X" + pX);
+  TCPChan.send("Y" + pY);
+}, 40);  // sends updates to server every 40 ms instead of every animation loop
+*/
+
 var keyPress = function() {
   for(var key in keysDown) {
     var value = Number(key);
 
     if (value == 37) {   //37 = left
       pX = Math.round(pX - speed);
-      TCPChan.send("X" + pX);
+      UDPChan.send("X" + pX);
     } else if (value == 39) {  //39 = right
       pX = Math.round(pX + speed);
-      TCPChan.send("X" + pX);
+      UDPChan.send("X" + pX);
     } else if (value == 40) {  //40 = down
       pY = Math.round(pY + speed);
-      TCPChan.send("Y" + pY);
+      UDPChan.send("Y" + pY);
     } else if (value == 38) {  //38 = up
       pY = Math.round(pY - speed);
-      TCPChan.send("Y" + pY);
+      UDPChan.send("Y" + pY);
     }
   }
 };
 
-var spaceKeyDown = false;
 window.addEventListener("keydown", function (event) {
-  keysDown[event.keyCode] = true;
-
-  if (event.keyCode == 32 && !spaceKeyDown) {
-    spaceKeyDown = true;
+  // Single sends
+  if (event.keyCode == 32 && !keysDown[32]) {  // space
     TCPChan.send("D");  // drop item
+  } else if (event.keyCode == 37 && !keysDown[37]) { // left
+    pX = Math.round(pX - speed);
+    TCPChan.send("X" + pX);
+  } else if (event.keyCode == 39 && !keysDown[39]) { // right
+    pX = Math.round(pX + speed);
+    TCPChan.send("X" + pX);
+  } else if (event.keyCode == 40 && !keysDown[40]) { // down
+    pY = Math.round(pY + speed);
+    TCPChan.send("Y" + pY);
+  } else if (event.keyCode == 38 && !keysDown[38]) { // up
+    pY = Math.round(pY - speed);
+    TCPChan.send("Y" + pY);
   }
+
+
+  keysDown[event.keyCode] = true;
 });
 
 window.addEventListener("keyup", function (event) {
   delete keysDown[event.keyCode];
-
-  if (event.keyCode == 32 && spaceKeyDown) {
-    spaceKeyDown = false;
-  }
 });
 
 window.addEventListener("resize", function(){

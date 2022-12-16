@@ -132,7 +132,56 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 	// Register text message handling
 	dataChannel.OnMessage(func(msg webrtc.DataChannelMessage) {
-		fmt.Printf("Message from DataChannel '%s': '%s'\n", dataChannel.Label(), string(msg.Data))
+		playerStruct, ok := Updates.Load(playerTag)
+		if ok == false {
+			fmt.Println("Uh oh")
+		}
+		tmpPlayer := playerStruct.(Player)  // need to create a temporary copy to edit: https://stackoverflow.com/questions/17438253/accessing-struct-fields-inside-a-map-value-without-copying
+
+		if msg.Data[0] == 'X' { //88 = "X"
+			x, err := strconv.ParseFloat(string(msg.Data[1:]), 64)
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			// Walls
+			if x < 2 {
+				x = 2
+			} else if x > 154 {
+				x = 154
+			}	
+
+			// Move Owned Item
+			if tmpPlayer.Held != "" {
+				tmpItem := ownedItems.LoadItem(tmpPlayer.Held)
+				tmpItem.X += x - tmpPlayer.X
+				ownedItems.StoreItem(tmpPlayer.Held, tmpItem)
+			}
+			
+			tmpPlayer.X = x
+			Updates.Store(playerTag, tmpPlayer)
+		} else if msg.Data[0] == 'Y' { //89 = "Y"
+			y, err := strconv.ParseFloat(string(msg.Data[1:]), 64)
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			if y < 2 {
+				y = 2
+			} else if y > 99 {
+				y = 99
+			}
+
+			// Move Owned Item
+			if tmpPlayer.Held != "" {
+				tmpItem := ownedItems.LoadItem(tmpPlayer.Held)
+				tmpItem.Y += y - tmpPlayer.Y 
+				ownedItems.StoreItem(tmpPlayer.Held, tmpItem)
+			}
+
+			tmpPlayer.Y = y
+			Updates.Store(playerTag, tmpPlayer)
+		}
 	})
 
 	//==============================================================================
@@ -156,7 +205,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	// Register message handling (Data all served as a bytes slice []byte)
 	// for user controls
 	reliableChannel.OnMessage(func(msg webrtc.DataChannelMessage) {
-		//fmt.Printf("Message from DataChannel '%s': '%s'\n", reliableChannel.Label(), string(msg.Data))
+		// fmt.Printf("Message from DataChannel '%s': '%s'\n", reliableChannel.Label(), string(msg.Data))
 
 		playerStruct, ok := Updates.Load(playerTag)
 		if ok == false {
