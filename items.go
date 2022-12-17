@@ -10,7 +10,7 @@ import (
 type Item struct {
 	X float64
 	Y float64
-	Owner string  // should be a playerTag
+	Owner string  // should be a playerTag or entity key
 	Kind string   // tells what kind of item it is
 }
 

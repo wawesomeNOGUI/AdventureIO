@@ -1,9 +1,11 @@
 package main
 
-import "sync"
-
+import (
+	"sync"
+	"fmt"
+)
 // Structs and Movement Functions For Game Entities
-
+/*
 type Entity struct {
 	X float64
 	Y float64
@@ -54,35 +56,67 @@ func (c *EntityContainer) GetEntities() map[string]Entity {
 
 	return tmpMap
 }
-
-//==================Bats=======================
-func (e *Entity) initializeBat() {
-	e.s = 0.5
-	e.behaviorFunc = batBehaviorFunc
+*/
+func InitializeEntities(m *sync.Map) {
+	// List all the entities you want here
+	m.Store(newBat(50, 75))
+	m.Store(newBat(50, 6))
 }
 
-func batBehaviorFunc(e *Entity) {
-	e.X++
-	e.Y++
+type EntityInterface interface {
+	behaviorFunc()
+}
 
-	if e.X < 2 {
-		e.X = 2
-	} else if e.X > 154 {
-		e.X = 154
+type EntityBase struct {
+	X float64
+	Y float64
+	s float64   // speed, how much can move each update (not exported)
+	Kind string // what kind of entity
+}
+
+//==================Bats=======================
+type Bat struct {
+	EntityBase
+	Held string // bats can pick up items
+}
+
+var numOfBats int
+func newBat(x, y float64) (string, *Bat) {
+	b := Bat{}
+	b.X = x 
+	b.Y = y
+	b.s = 0.25
+	b.Kind = "bat"	
+
+	numOfBats++
+	return fmt.Sprintf("bat%d", numOfBats), &b
+}
+
+func (b *Bat) behaviorFunc() {
+	b.X += b.s
+	b.Y += b.s
+
+	if b.X < 2 {
+		b.X = 2
+		b.s = -b.s
+	} else if b.X > 154 {
+		b.X = 154
 	}	
 	
-	if e.Y < 2 {
-		e.Y = 2
-	} else if e.Y > 99 {
-		e.Y = 99
+	if b.Y < 2 {
+		b.Y = 2
+	} else if b.Y > 99 {
+		b.Y = 99
 	}
 }
 //==================Dragons====================
+/*
 func (e *Entity) initializeDragon() {
-	e.s = 0.25
+	e.s = 0.15
 	e.behaviorFunc = dragonBehaviorFunc
 }
 
 func dragonBehaviorFunc(e *Entity) {
 
 }
+*/

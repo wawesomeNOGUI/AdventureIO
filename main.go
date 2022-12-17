@@ -411,9 +411,10 @@ func sendGameStateUnreliableLoop() {
 		})
 
 		// Entities
-		for k, v := range entities.GetEntities() {
-			tmpMap[k] = v
-		}
+		entities.Range(func(k, v interface{}) bool {
+			tmpMap[k.(string)] = v
+			return true
+		})
 
 		// Items
 		for k, v := range strayItems.GetItems() {
@@ -441,15 +442,16 @@ var strayItems ItemContainer = ItemContainer{items: make(map[string]Item)}
 // will contain items with the key being the item, and each item has an Owner tag set to the playerTag who owns it
 var ownedItems ItemContainer = ItemContainer{items: make(map[string]Item)}
 
-var entities EntityContainer = EntityContainer{entities: make(map[string]Entity)}
+// var entities EntityContainer = EntityContainer{entities: make(map[string]Entity)}
+var entities sync.Map
 
-var entityData []Entity
 var itemData []Item
 func initGameVars() {
 	for i := 0; i < len(itemData); i++ {
 		strayItems.StoreItem(itemData[i].Kind + strconv.Itoa(i), itemData[i])
 	}
 
+	/*
 	for i := 0; i < len(entityData); i++ {
 		if entityData[i].Kind == "bat" {
 			entityData[i].initializeBat()
@@ -458,8 +460,8 @@ func initGameVars() {
 		}
 		entities.StoreEntity(entityData[i].Kind + strconv.Itoa(i), entityData[i])
 	}
-
-	fmt.Println(entities.GetEntities())
+	*/
+	InitializeEntities(&entities)
 }
 
 // All server orchestrated game logic
@@ -499,10 +501,10 @@ func gameLoop() {
 		})
 
 		// Update Entities
-		for k, v := range entities.GetEntities() {
-			v.behaviorFunc(&v)
-			entities.StoreEntity(k, v)
-		}
+		entities.Range(func(k, v interface{}) bool {
+			v.(EntityInterface).behaviorFunc()
+			return true
+		})
 
 	}
 }
@@ -514,15 +516,6 @@ func main() {
 	}
 
 	if err := json.Unmarshal(dat, &itemData); err != nil {
-		panic(err)
-	}
-
-	dat, err = os.ReadFile("./gameData/entityData.json")
-	if err != nil {
-		panic(err)
-	}
-
-	if err := json.Unmarshal(dat, &entityData); err != nil {
 		panic(err)
 	}
 
