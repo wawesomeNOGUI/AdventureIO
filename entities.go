@@ -70,7 +70,8 @@ type EntityInterface interface {
 type EntityBase struct {
 	X float64
 	Y float64
-	s float64   // speed, how much can move each update (not exported)
+	sX float64   // speed, how much can move each update (not exported)
+	sY float64
 	Kind string // what kind of entity
 }
 
@@ -78,6 +79,7 @@ type EntityBase struct {
 type Bat struct {
 	EntityBase
 	Held string // bats can pick up items
+	heldCounter int	// how long the bat has held this item, it drops it after the counter reaches a certain point
 }
 
 var numOfBats int
@@ -85,7 +87,8 @@ func newBat(x, y float64) (string, *Bat) {
 	b := Bat{}
 	b.X = x 
 	b.Y = y
-	b.s = 1
+	b.sX = 1
+	b.sY = -1
 	b.Kind = "bat"	
 
 	numOfBats++
@@ -93,33 +96,53 @@ func newBat(x, y float64) (string, *Bat) {
 }
 
 func (b *Bat) behaviorFunc() {
-	prevX := b.X
-	prevY := b.Y
-
-	b.X += b.s
-	//b.Y += b.s
+	b.X += b.sX
+	b.Y += b.sY
 
 	if b.Held != "" {
 		tmpItem := ownedItems.LoadItem(b.Held)
-		tmpItem.X += b.X - prevX
-		tmpItem.Y += b.Y - prevY
+		tmpItem.X += b.sX
+		tmpItem.Y += b.sY
 		ownedItems.StoreItem(b.Held, tmpItem)
+
+		b.heldCounter++
+
+		if b.heldCounter > 100 {
+			ownedItems.DeleteItem(b.Held)
+			k := b.Held
+			tmpItem.Owner = ""
+			b.Held = ""
+			b.heldCounter = 0
+
+			// fly away from dropped item
+			if tmpItem.X > b.X && b.sX > 0 {
+				b.sX = -b.sX
+			}
+			if tmpItem.Y > b.Y && b.sY > 0 {
+				b.sY = -b.sY
+			}
+			
+			tmpItem.X -= b.sX * 2
+			tmpItem.Y -= b.sY * 2
+
+			strayItems.StoreItem(k, tmpItem)
+		}
 	}
 
 	if b.X < 2 {
 		b.X = 2
-		b.s = -b.s
+		b.sX = -b.sX
 	} else if b.X > 154 {
 		b.X = 154
-		b.s = -b.s
+		b.sX = -b.sX
 	}	
 	
 	if b.Y < 2 {
 		b.Y = 2
-		b.s = -b.s
+		b.sY = -b.sY
 	} else if b.Y > 99 {
 		b.Y = 99
-		b.s = -b.s
+		b.sY = -b.sY
 	}
 }
 
