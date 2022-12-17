@@ -134,17 +134,15 @@ var render = function () {
         ctx.fillRect(pX, pY, 4, 4);
       }
     } else if (previousUpdate.hasOwnProperty(key)) { // its an item
-      if (Updates[key].Kind == "sword") {
-        if (Updates[key].Owner != playerTag) {
-          var x = smoothstep(previousUpdate[key].X, Updates[key].X, t);
-          var y = smoothstep(previousUpdate[key].Y, Updates[key].Y, t);
-  
-          ctx.drawImage(swordSprite, Math.round(x), Math.round(y));
-        } else {
-          // Draw local player's item
-          //ctx.drawImage(swordSprite, pX + Math.round(ownedItemXYOffset[0]), pY + Math.round(ownedItemXYOffset[1]));
-          drawColorSprite(ctx, keySprite, "#FF00FF", pX + Math.round(ownedItemXYOffset[0]), pY + Math.round(ownedItemXYOffset[1]));
-        }
+      if (Updates[key].Owner != playerTag) {
+        var x = smoothstep(previousUpdate[key].X, Updates[key].X, t);
+        var y = smoothstep(previousUpdate[key].Y, Updates[key].Y, t);
+
+        ctx.drawImage(spriteMap[Updates[key].Kind], Math.round(x), Math.round(y));
+      } else {
+        // Draw local player's item
+        //ctx.drawImage(swordSprite, pX + Math.round(ownedItemXYOffset[0]), pY + Math.round(ownedItemXYOffset[1]));
+        drawColorSprite(ctx, spriteMap[Updates[key].Kind], "#FF00FF", pX + Math.round(ownedItemXYOffset[0]), pY + Math.round(ownedItemXYOffset[1]));
       }
     }
   }
