@@ -61,7 +61,7 @@ func (c *ItemContainer) isItemHere(x, y float64) (bool, string) {
 	// c.mu.Lock()
     // defer c.mu.Unlock()
 
-	for k, v := range strayItems.items {
+	for k, v := range c.items {
 		d := math.Sqrt(math.Pow(x - v.X, 2) + math.Pow(y - v.Y, 2))
 
 		if d < 10 {
