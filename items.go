@@ -74,9 +74,9 @@ func (c *ItemContainer) isItemHere(x, y float64) (bool, string) {
 
 // TryPickUpItem allows a player to request trying to pick up an item.
 // The function uses ItemContainer mutex so only one player goroutine can try to pick up an item at a time (concurrent safe)
-// If the player can pick up the item, set the Item Owned member to the playerTag, 
+// If the player can pick up the item, set the Item Owned member to the playerTag or entity, 
 // put the item in the ownedItems map (parameter o) and then return true, the Item key
-func (c *ItemContainer) TryPickUpItem(o *ItemContainer, pTag string, x, y float64) (bool, string) {
+func (c *ItemContainer) TryPickUpItem(o *ItemContainer, tag string, x, y float64) (bool, string) {
 	c.mu.Lock()
     defer c.mu.Unlock()
 
@@ -87,7 +87,7 @@ func (c *ItemContainer) TryPickUpItem(o *ItemContainer, pTag string, x, y float6
 
 	if itemHere {
 		tmpItem := c.items[itemKey]
-		tmpItem.Owner = pTag
+		tmpItem.Owner = tag
 		o.items[itemKey] = tmpItem
 
 		delete(c.items, itemKey)

@@ -502,7 +502,17 @@ func gameLoop() {
 
 		// Update Entities
 		entities.Range(func(k, v interface{}) bool {
-			v.(EntityInterface).behaviorFunc()
+			switch z := v.(type) {
+			case *Bat:
+				// here z is a pointer to a Bat
+				z.tryPickUpItem(k.(string), &strayItems, &ownedItems)
+			// case Dragon:
+				// here z has type S
+			default:
+				// no match; here z has the same type as v (interface{})
+			}
+
+			v.(EntityInterface).behaviorFunc()			
 			return true
 		})
 
@@ -540,7 +550,7 @@ func main() {
 
 	//Our Public Candidate is declared here cause we're not using a STUN server for discovery
 	//and just hardcoding the open port, and port forwarding webrtc traffic on the router
-	settingEngine.SetNAT1To1IPs([]string{"162.200.58.171"}, webrtc.ICECandidateTypeHost)
+	settingEngine.SetNAT1To1IPs([]string{}, webrtc.ICECandidateTypeHost)
 
 	// Configure our SettingEngine to use our UDPMux. By default a PeerConnection has
 	// no global state. The API+SettingEngine allows the user to share state between them.

@@ -85,7 +85,7 @@ func newBat(x, y float64) (string, *Bat) {
 	b := Bat{}
 	b.X = x 
 	b.Y = y
-	b.s = 0.25
+	b.s = 1
 	b.Kind = "bat"	
 
 	numOfBats++
@@ -93,21 +93,42 @@ func newBat(x, y float64) (string, *Bat) {
 }
 
 func (b *Bat) behaviorFunc() {
+	prevX := b.X
+	prevY := b.Y
+
 	b.X += b.s
-	b.Y += b.s
+	//b.Y += b.s
+
+	if b.Held != "" {
+		tmpItem := ownedItems.LoadItem(b.Held)
+		tmpItem.X += b.X - prevX
+		tmpItem.Y += b.Y - prevY
+		ownedItems.StoreItem(b.Held, tmpItem)
+	}
 
 	if b.X < 2 {
 		b.X = 2
 		b.s = -b.s
 	} else if b.X > 154 {
 		b.X = 154
+		b.s = -b.s
 	}	
 	
 	if b.Y < 2 {
 		b.Y = 2
+		b.s = -b.s
 	} else if b.Y > 99 {
 		b.Y = 99
+		b.s = -b.s
 	}
+}
+
+func (b *Bat) tryPickUpItem(batKey string, s, o *ItemContainer) (bool) {
+	gotItem, itemKey := s.TryPickUpItem(o, batKey, b.X+2, b.Y+2)
+	if gotItem {
+		b.Held = itemKey
+	}
+	return gotItem
 }
 //==================Dragons====================
 /*
