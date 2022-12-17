@@ -467,7 +467,7 @@ func initGameVars() {
 // All server orchestrated game logic
 func gameLoop() {
 	for {
-		time.Sleep(time.Millisecond * 16)  // Little faster than 60 updates per second
+		time.Sleep(time.Millisecond * 16)  // 16 ms is a little faster than 60 updates per second
 
 		Updates.Range(func(k, v interface{}) bool {
 			/*
@@ -505,7 +505,9 @@ func gameLoop() {
 			switch z := v.(type) {
 			case *Bat:
 				// here z is a pointer to a Bat
-				z.tryPickUpItem(k.(string), &strayItems, &ownedItems)
+				if z.Held == "" {
+					z.tryPickUpItem(k.(string), &strayItems, &ownedItems)
+				}
 			// case Dragon:
 				// here z has type S
 			default:
