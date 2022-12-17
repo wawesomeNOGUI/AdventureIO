@@ -49,13 +49,13 @@ var spriteMap = {
 
 var spriteAnimationInterval = setInterval(function(){
   //Bat Animation
-  if (spriteMap["bat"] = batSprite0) {
+  if (spriteMap["bat"] == batSprite0) {
     spriteMap["bat"] = batSprite1;
   } else {
     spriteMap["bat"] = batSprite0;
   }
   
-}, 700)
+}, 250)
 //==========================================================
 
 // Player Vars
