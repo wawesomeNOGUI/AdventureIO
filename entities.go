@@ -111,6 +111,11 @@ func (b *Bat) behaviorFunc() {
 		b.heldCounter++
 
 		if b.heldCounter > heldCounterThreshold {
+			if b.X < 15 || b.X > 145 {
+				goto WallCheck
+			} else if b.Y < 15 || b.Y > 90 {
+				goto WallCheck
+			}
 			ownedItems.DeleteItem(b.Held)
 			k := b.Held
 			tmpItem.Owner = ""
@@ -139,6 +144,8 @@ func (b *Bat) behaviorFunc() {
 			b.vY = vY
 		}
 	}
+
+	WallCheck:
 
 	if b.X < 2 {
 		b.X = 2
