@@ -469,37 +469,6 @@ func gameLoop() {
 	for {
 		time.Sleep(time.Millisecond * 16)  // 16 ms is a little faster than 60 updates per second
 
-		Updates.Range(func(k, v interface{}) bool {
-			/*
-			for ki, vi := range strayItems.GetItems() {
-				// d := math.Sqrt(math.Pow(v.(Player).X - vi.(Item).X - 5, 2) + math.Pow(v.(Player).Y - vi.(Item).Y - 2, 2))
-				dX := vi.X + 5 - v.(Player).X + 2 
-				dY := vi.Y - 2 - v.(Player).Y + 2
-
-				if math.Abs(dX) < 8 && math.Abs(dY) < 4 {
-					// pick up item
-					tmpItem := vi
-					strayItems.DeleteItem(ki)
-
-					tmpItem.X = dX * 2  // to offset Item from player
-					tmpItem.Y = dY * 2
-					tmpItem.Owner = k.(string); 
-
-					tmpPlayer := v.(Player)
-					tmpPlayer.Held = tmpItem;
-
-					//Updates.Store(k, tmpPlayer)
-					//ownedItems.Store(ki, tmpItem)
-
-					break
-				}
-			}
-			*/
-
-			return true   
-			// return false	// If f returns false, range stops the iteration. 
-		})
-
 		// Update Entities
 		entities.Range(func(k, v interface{}) bool {
 			switch z := v.(type) {

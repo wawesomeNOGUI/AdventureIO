@@ -70,8 +70,9 @@ type EntityInterface interface {
 type EntityBase struct {
 	X float64
 	Y float64
-	sX float64   // speed, how much can move each update (not exported)
-	sY float64
+	s float64	// speed, how much can move each update (not exported)
+	vX float64  // current direction vectors (normalized = hypotenuse of 1) 
+	vY float64
 	Kind string // what kind of entity
 }
 
@@ -80,6 +81,7 @@ type Bat struct {
 	EntityBase
 	Held string // bats can pick up items
 	heldCounter int	// how long the bat has held this item, it drops it after the counter reaches a certain point
+	waitCounter int // time delay before allowed to fly towards items again
 }
 
 var numOfBats int
@@ -87,62 +89,71 @@ func newBat(x, y float64) (string, *Bat) {
 	b := Bat{}
 	b.X = x 
 	b.Y = y
-	b.sX = 1
-	b.sY = -1
+	b.s = 1
 	b.Kind = "bat"	
 
 	numOfBats++
 	return fmt.Sprintf("bat%d", numOfBats), &b
 }
 
+var heldCounterThreshold int = 100
+var waitCounterThreshold int = 200
 func (b *Bat) behaviorFunc() {
-	b.X += b.sX
-	b.Y += b.sY
+	b.X += b.vX * b.s
+	b.Y += b.vY * b.s
 
 	if b.Held != "" {
 		tmpItem := ownedItems.LoadItem(b.Held)
-		tmpItem.X += b.sX
-		tmpItem.Y += b.sY
+		tmpItem.X += b.vX * b.s
+		tmpItem.Y += b.vY * b.s
 		ownedItems.StoreItem(b.Held, tmpItem)
 
 		b.heldCounter++
 
-		if b.heldCounter > 100 {
+		if b.heldCounter > heldCounterThreshold {
 			ownedItems.DeleteItem(b.Held)
 			k := b.Held
 			tmpItem.Owner = ""
 			b.Held = ""
 			b.heldCounter = 0
+			b.waitCounter = waitCounterThreshold
 
 			// fly away from dropped item
-			if tmpItem.X > b.X && b.sX > 0 {
-				b.sX = -b.sX
+			if tmpItem.X > b.X && b.vX > 0 {
+				b.vX = -b.vX
 			}
-			if tmpItem.Y > b.Y && b.sY > 0 {
-				b.sY = -b.sY
+			if tmpItem.Y > b.Y && b.vY > 0 {
+				b.vY = -b.vY
 			}
 			
-			tmpItem.X -= b.sX * 2
-			tmpItem.Y -= b.sY * 2
+			tmpItem.X -= b.vX * 5
+			tmpItem.Y -= b.vY * 5
 
 			strayItems.StoreItem(k, tmpItem)
+		}
+	} else if b.waitCounter--; b.waitCounter < 0 {	// chase items
+		itemKey, vX, vY := strayItems.ClosestItem(20, 100, b.X, b.Y)
+
+		if itemKey != "" {
+			b.vX = vX
+			b.vY = vY
 		}
 	}
 
 	if b.X < 2 {
 		b.X = 2
-		b.sX = -b.sX
+		b.vX = -b.vX
 	} else if b.X > 154 {
 		b.X = 154
-		b.sX = -b.sX
+		b.vX = -b.vX
 	}	
 	
 	if b.Y < 2 {
 		b.Y = 2
-		b.sY = -b.sY
+		b.vY = -b.vY
 	} else if b.Y > 99 {
 		b.Y = 99
-		b.sY = -b.sY
+		b.vY = -b.vY
 	}
 }
 

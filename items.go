@@ -57,6 +57,37 @@ func (c *ItemContainer) GetItems() map[string]Item {
 	return tmpMap
 }
 
+// returns item key, and normalized vector pointing from x,y to the item
+// closeParam tells distance when the search should break cause found a close enough item
+// d is the largest search radius
+func (c *ItemContainer) ClosestItem(closeParam, d, x, y float64) (string, float64, float64) {
+	c.mu.Lock()
+    defer c.mu.Unlock()
+
+	var closest string
+	var dX float64
+	var dY float64
+
+	for k, v := range c.items {
+		tmpDX := v.X - x 
+		tmpDY := v.Y - y
+		tmpD := math.Sqrt((tmpDX)*(tmpDX) + (tmpDY)*(tmpDY))
+
+		if tmpD < d {
+			closest = k
+			d = tmpD
+			dX = tmpDX
+			dY = tmpDY
+		}
+
+		if d < closeParam {  // so don't have to search through all items just return early after finding pretty close one
+			break
+		}
+	}
+
+	return closest, dX/d, dY/d
+}
+
 func (c *ItemContainer) isItemHere(x, y float64) (bool, string) {
 	// c.mu.Lock()
     // defer c.mu.Unlock()
