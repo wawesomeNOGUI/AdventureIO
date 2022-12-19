@@ -3,17 +3,24 @@ package main
 import (
 	"sync"
 	"fmt"
+	"encoding/json"
+	"math"
 )
 
 type EntityInterface interface {
 	Update()
+
+	Held() EntityInterface    // This method and below implemented by EntityBase
+	Key() string
+	GetX() float64
+	GetY() float64
 }
 
 // recursively traverse all entities being held by the caller entity 
-func (e EntityInterface) TraverseEntities(output map[string]EntityInterface) {
-	if e.held != nil {
-		e.held.TraverseEntities(output)
-		output[e.key] = e
+func TraverseEntities(e EntityInterface, output map[string]EntityInterface) {
+	if e.Held() != nil {
+		TraverseEntities(e.Held(), output)
+		output[e.Key()] = e
 	}
 }
 
@@ -23,17 +30,6 @@ type EntityContainer struct {
 	entities map[string]EntityInterface
 }
 
-// All entities will have at least this info
-type EntityBase struct {
-	key string	// this entity's unique key for inserting into map
-	X float64
-	Y float64
-	s float64	// speed, how much can move each update (not exported)
-	vX float64  // current direction vectors (normalized = hypotenuse of 1) 
-	vY float64
-	Kind string // what kind of entity
-	held EntityInterface // should be a pointer reference to an entity, this entity will only be accessed through parent entity
-}
 
 func (c *EntityContainer) LoadEntity(k string) EntityInterface {
 	c.mu.Lock()
@@ -79,7 +75,7 @@ func (c *EntityContainer) SerializeEntities() string {
 
 	tmpMap := make(map[string]EntityInterface)
 	for _, v := range c.entities {
-		v.TraverseEntities(tmpMap)
+		TraverseEntities(v, tmpMap)
 	}
 
 	jsonTemp, err := json.Marshal(tmpMap)
