@@ -1,5 +1,6 @@
 package main
 
+import "fmt"
 
 // all entities implement EntityInterface 
 // this file has monsters, animals, things that move

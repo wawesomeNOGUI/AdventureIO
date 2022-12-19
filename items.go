@@ -1,8 +1,8 @@
 package main
 
 import (
-	"sync"
 	"math"
+	"fmt"
 )
 
 // Generic structs and methods for items (Items implement EntityInterface)
@@ -25,11 +25,11 @@ func newItem(kind string, x, y float64) (string, *Item) {
 	return i.key, &i
 }
 
-func (c *Item) Update() {
+func (b *Item) Update() {
 	b.X += b.vX * b.s
 	b.Y += b.vY * b.s
 
-	WallCheck:
+	// WallCheck:
 
 	if b.X < 2 {
 		b.X = 2
@@ -53,12 +53,12 @@ func (c *EntityContainer) isItemHere(x, y float64) (bool, string) {
     // defer c.mu.Unlock()
 
 	for k, v := range c.entities {
-		_, ok := v.(Item)  // check if EntityInterface holds type Item
+		_, ok := v.(*Item)  // check if EntityInterface holds type Item
 		if !ok {
 			continue
 		}
 
-		d := math.Sqrt(math.Pow(x - v.X, 2) + math.Pow(y - v.Y, 2))
+		d := math.Sqrt(math.Pow(x - v.GetX(), 2) + math.Pow(y - v.GetY(), 2))
 
 		if d < 10 {
 			return true, k
@@ -79,7 +79,7 @@ func (c *EntityContainer) TryPickUpItem(ref EntityInterface, x, y float64) (bool
 	itemHere, itemKey := c.isItemHere(x, y)
 
 	if itemHere {
-		ref.held = c.DeleteEntity(itemKey)
+		ref.SetHeld(c.DeleteEntity(itemKey))
 	}
 
 	return false, ""

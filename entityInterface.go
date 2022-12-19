@@ -11,9 +11,12 @@ type EntityInterface interface {
 	Update()
 
 	Held() EntityInterface    // This method and below implemented by EntityBase
+	SetHeld(EntityInterface)
 	Key() string
 	GetX() float64
+	SetX(float64)
 	GetY() float64
+	SetY(float64) 
 }
 
 // recursively traverse all entities being held by the caller entity 
@@ -108,8 +111,8 @@ func (c *EntityContainer) ClosestEntity(closeParam, d, x, y float64) (string, fl
 	var dY float64
 
 	for k, v := range c.entities {
-		tmpDX := v.X - x 
-		tmpDY := v.Y - y
+		tmpDX := v.GetX() - x 
+		tmpDY := v.GetY() - y
 		tmpD := math.Sqrt((tmpDX)*(tmpDX) + (tmpDY)*(tmpDY))
 
 		if tmpD < d {
