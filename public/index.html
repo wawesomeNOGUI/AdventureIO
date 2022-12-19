@@ -88,11 +88,13 @@ window.addEventListener("load", function(evt) {
   })
 
   var sdpSends = 0;
+  var animating = false;
 
   pc.onsignalingstatechange = e => console.log(pc.signalingState)
   pc.oniceconnectionstatechange = e => {
     console.log(pc.iceConnectionState)
-    if (pc.iceConnectionState == "connected"){
+    if (pc.iceConnectionState == "connected" && !animating){
+      animating = true;
       animate(step); //start client side loop in game.js
     }
   }
