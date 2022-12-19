@@ -1,1 +1,1 @@
-go build -ldflags "-w -s" main.go players.go entities.go items.go messaging.go
+go build -ldflags "-w -s" main.go players.go entities.go entityInterface.go items.go initializeGameData.go messaging.go

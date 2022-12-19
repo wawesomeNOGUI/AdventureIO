@@ -1,80 +1,8 @@
 package main
 
-import (
-	"sync"
-	"fmt"
-)
-// Structs and Movement Functions For Game Entities
-/*
-type Entity struct {
-	X float64
-	Y float64
-	s float64   // speed, how much can move each update (not exported)
-	Kind string // what kind of entity
-	Held string // key of item the entity holds
-	behaviorFunc func(*Entity)
-}
 
-type EntityContainer struct {
-	mu sync.Mutex
-	entities map[string]Entity
-}
-
-func (c *EntityContainer) LoadEntity(k string) Entity {
-	c.mu.Lock()
-    defer c.mu.Unlock()
-
-	return c.entities[k]
-}
-
-func (c *EntityContainer) StoreEntity(k string, v Entity) {
-	c.mu.Lock()
-    defer c.mu.Unlock()
-
-	c.entities[k] = v
-}
-
-func (c *EntityContainer) DeleteEntity(k string) Entity {
-	c.mu.Lock()
-    defer c.mu.Unlock()
-
-	tmpEntity := c.entities[k]
-	delete(c.entities, k)
-
-	return tmpEntity
-}
-
-// Return map of all Entities currently contained in the EntityContainer
-func (c *EntityContainer) GetEntities() map[string]Entity {
-	c.mu.Lock()
-    defer c.mu.Unlock()
-
-	tmpMap := make(map[string]Entity)
-	for k, v := range c.entities {
-		tmpMap[k] = v
-	}
-
-	return tmpMap
-}
-*/
-func InitializeEntities(m *sync.Map) {
-	// List all the entities you want here
-	m.Store(newBat(50, 75))
-	m.Store(newBat(50, 6))
-}
-
-type EntityInterface interface {
-	behaviorFunc()
-}
-
-type EntityBase struct {
-	X float64
-	Y float64
-	s float64	// speed, how much can move each update (not exported)
-	vX float64  // current direction vectors (normalized = hypotenuse of 1) 
-	vY float64
-	Kind string // what kind of entity
-}
+// all entities implement EntityInterface 
+// this file has monsters, animals, things that move
 
 //==================Bats=======================
 type Bat struct {
@@ -93,12 +21,14 @@ func newBat(x, y float64) (string, *Bat) {
 	b.Kind = "bat"	
 
 	numOfBats++
-	return fmt.Sprintf("bat%d", numOfBats), &b
+	b.key = fmt.Sprintf("bat%d", numOfBats)
+
+	return b.key, &b
 }
 
 var heldCounterThreshold int = 100
 var waitCounterThreshold int = 200
-func (b *Bat) behaviorFunc() {
+func (b *Bat) Update() {
 	b.X += b.vX * b.s
 	b.Y += b.vY * b.s
 
@@ -164,7 +94,7 @@ func (b *Bat) behaviorFunc() {
 	}
 }
 
-func (b *Bat) tryPickUpItem(batKey string, s, o *ItemContainer) (bool) {
+func (b *Bat) tryPickUpItem(batKey string, s, o *EntityInterface) (bool) {
 	gotItem, itemKey := s.TryPickUpItem(o, batKey, b.X+2, b.Y+2)
 	if gotItem {
 		b.Held = itemKey
