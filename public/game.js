@@ -18,13 +18,21 @@ ctx.imageSmoothingEnabled = false;
 
 //Set border color / width here
 // object.style.border = "width style color|initial|inherit" 
-canvas.style.borderStyle = "solid"
-canvas.style.borderWidth = "20px";
-canvas.style.borderColor = "#A4FCD4";
+//canvas.style.borderStyle = "solid"
+//canvas.style.borderWidth = "20px";
+var borderColor = "#A4FCD4";
+//canvas.style.borderColor = "#A4FCD4";
+
+function hexToRgb(hex) {
+  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return "rgb(" + parseInt(result[1], 16) + "," + parseInt(result[2], 16) + "," + parseInt(result[3], 16) + ")";
+}
 
 //Scale canvas to fit user's screen
-canvas.style.width = ""+ window.innerWidth - 40 +"px";
-canvas.style.height = ""+ window.innerHeight - 40 +"px";
+//canvas.style.width = ""+ window.innerWidth - 40 +"px";
+//canvas.style.height = ""+ window.innerHeight - 40 +"px";
+canvas.style.width = ""+ window.innerWidth +"px";
+canvas.style.height = ""+ window.innerHeight +"px";
 
 var keysDown = {};     //This creates var for keysDown event
 
@@ -62,7 +70,7 @@ var spriteAnimationInterval = setInterval(function(){
 var pX = 50;
 var pY = 50;
 var speed = 0.75;
-var pColor = canvas.style.borderColor;
+var pColor = hexToRgb(borderColor);
 var imgData;
 
 // World Vars
@@ -143,6 +151,8 @@ var render = function () {
         var y = smoothstep(previousUpdate[key].Y, Updates[key].Y, t);
 
         ctx.drawImage(spriteMap[Updates[key].Kind], Math.round(x), Math.round(y));
+        // ctx.drawImage(spriteMap[Updates[key].Kind], Updates[key].X, Updates[key].Y);
+
       }
     }
   }
@@ -235,12 +245,33 @@ window.addEventListener("keydown", function (event) {
 });
 
 window.addEventListener("keyup", function (event) {
+  // send a couple more ordered udp messages for player movement 
+  // so server will most likely get the last location the player moved to
+  // can't do TCP send here cause if user starts moving again, the fast udp messages might
+  // come in first and then the late TCP message of where user stopped will make it look
+  // to other players like a player rubberbanded 
+  if (event.keyCode == 37) { // left
+    UDPChan.send("X" + pX);
+    UDPChan.send("X" + pX);
+  } else if (event.keyCode == 39) { // right
+    UDPChan.send("X" + pX);
+    UDPChan.send("X" + pX);
+  } else if (event.keyCode == 40) { // down
+    UDPChan.send("Y" + pY);
+    UDPChan.send("Y" + pY);
+  } else if (event.keyCode == 38) { // up
+    UDPChan.send("Y" + pY);
+    UDPChan.send("Y" + pY);
+  }
+
   delete keysDown[event.keyCode];
 });
 
 window.addEventListener("resize", function(){
-  canvas.style.width = ""+ window.innerWidth - 40 +"px";
-  canvas.style.height = ""+ window.innerHeight - 40 +"px";
+ // canvas.style.width = ""+ window.innerWidth - 40 +"px";
+ // canvas.style.height = ""+ window.innerHeight - 40 +"px";
+ canvas.style.width = ""+ window.innerWidth +"px";
+ canvas.style.height = ""+ window.innerHeight +"px";
 });
 
 window.addEventListener("contextmenu", function(e){
