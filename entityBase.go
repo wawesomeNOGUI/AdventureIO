@@ -24,6 +24,10 @@ func (e *EntityBase) Key() string {
 	return e.key
 }
 
+func (e *EntityBase) GetKind() string {
+	return e.Kind
+}
+
 func (e *EntityBase) GetX() float64 {
 	return e.X
 }

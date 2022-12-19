@@ -13,6 +13,7 @@ type EntityInterface interface {
 	Held() EntityInterface    // This method and below implemented by EntityBase
 	SetHeld(EntityInterface)
 	Key() string
+	GetKind() string
 	GetX() float64
 	SetX(float64)
 	GetY() float64

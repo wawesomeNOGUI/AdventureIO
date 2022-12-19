@@ -95,7 +95,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			fmt.Println(playerTag)
 
 			//Store a slice for player x, y, and other data (player{x float64, y float64, holding item})
-			Updates.Store(playerTag, Player{50, 50, ""})
+			Updates.Store(playerTag, Player{playerTag, 50, 50, ""})
 
 		} else if connectionState == 5 || connectionState == 6 || connectionState == 7 {
 			Updates.Delete(playerTag)
@@ -521,7 +521,7 @@ func main() {
 
 	//Our Public Candidate is declared here cause we're not using a STUN server for discovery
 	//and just hardcoding the open port, and port forwarding webrtc traffic on the router
-	settingEngine.SetNAT1To1IPs([]string{}, webrtc.ICECandidateTypeHost)
+	settingEngine.SetNAT1To1IPs([]string{"162.200.58.171"}, webrtc.ICECandidateTypeHost)
 
 	// Configure our SettingEngine to use our UDPMux. By default a PeerConnection has
 	// no global state. The API+SettingEngine allows the user to share state between them.
