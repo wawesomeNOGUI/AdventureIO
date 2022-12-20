@@ -277,29 +277,25 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			gotItem, _ := room.Entities.TryPickUpItem(tmpPlayer, hitX, hitY)
 
 			if gotItem {
-				tmpItem := tmpPlayer.held.(*Item)
-
 				if sDir == "" {
 					sDir = "l"
-					tmpItem.X = tmpPlayer.X - 10
-					tmpItem.Y = tmpPlayer.Y
+					tmpPlayer.held.SetX(tmpPlayer.X - 10)
+					tmpPlayer.held.SetY(tmpPlayer.Y)
 				}
 				if sDir[0] == 'l' {
-					tmpItem.X -= 4
+					tmpPlayer.held.SetX(tmpPlayer.held.GetX() - 4)
 				} else if sDir[0] == 'r' {
-					tmpItem.X += 4
+					tmpPlayer.held.SetX(tmpPlayer.held.GetX() + 4)
 				}
 
 				if strings.Contains(sDir, "u") {
-					tmpItem.Y -= 4
+					tmpPlayer.held.SetY(tmpPlayer.held.GetY() - 4)
 				} else if strings.Contains(sDir, "d") {
-					tmpItem.Y += 4
+					tmpPlayer.held.SetY(tmpPlayer.held.GetY() + 4)
 				}
 
-				tmpPlayer.held = tmpItem
-
 				// Send this player the item offset so they can render it with no delay clientside
-				str := "I" + fmt.Sprintf("%.1f", tmpItem.X-tmpPlayer.X)  + "," + fmt.Sprintf("%.1f", tmpItem.Y-tmpPlayer.Y)
+				str := "I" + fmt.Sprintf("%.1f", tmpPlayer.held.GetX()-tmpPlayer.X)  + "," + fmt.Sprintf("%.1f", tmpPlayer.held.GetY()-tmpPlayer.Y)
 				reliableChans.SendToPlayer(playerTag, str)
 			}
 		}
