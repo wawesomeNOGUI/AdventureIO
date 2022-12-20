@@ -1,10 +1,10 @@
 package main
 
-import "fmt"
+//import "fmt"
 
 // all entities implement EntityInterface 
 // this file has monsters, animals, things that move
-
+/*
 //==================Bats=======================
 type Bat struct {
 	EntityBase

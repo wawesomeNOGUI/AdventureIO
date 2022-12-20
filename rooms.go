@@ -15,7 +15,7 @@ type Room struct {
 func newRoom(key string, uF func(*Room), l, r, u, d *Room) (string, *Room) {
 	room := Room{}
 	room.Entities = EntityContainer{entities: make(map[string]EntityInterface)} 
-	room.updateFunc
+	room.updateFunc = uF
 	room.leftRoom = l
 	room.rightRoom = r
 	room.aboveRoom = u
