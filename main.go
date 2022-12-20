@@ -21,7 +21,7 @@ import (
 )
 
 // Game Updates Map
-var Updates sync.Map
+// var Updates sync.Map
 var NumberOfPlayers int
 
 // Concurrent Safe Maps of Datachannels for broadcasting or sending messages between players
@@ -46,6 +46,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 	//===========This Player's Variables===================
 	var playerTag string
+	var room *Room
 
 	//===========WEBRTC====================================
 	// Create a new RTCPeerConnection
@@ -100,9 +101,10 @@ func echo(w http.ResponseWriter, r *http.Request) {
 				fmt.Println("Couldn't find room")
 			}
 			v.(*Room).Entities.StoreEntity(playerTag, newPlayer(playerTag, 50, 50))
+			room = v.(*Room)
 
 		} else if connectionState == 5 || connectionState == 6 || connectionState == 7 {
-			Updates.Delete(playerTag)
+			room.Entities.DeleteEntity(playerTag)
 			fmt.Println("Deleted Player")
 
 			reliableChans.DeletePlayerChan(playerTag)
@@ -137,11 +139,11 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 	// Register text message handling
 	dataChannel.OnMessage(func(msg webrtc.DataChannelMessage) {
-		playerStruct, ok := Updates.Load(playerTag)
-		if ok == false {
-			fmt.Println("Uh oh")
-		}
-		tmpPlayer := playerStruct.(Player)  // need to create a temporary copy to edit: https://stackoverflow.com/questions/17438253/accessing-struct-fields-inside-a-map-value-without-copying
+		playerStruct := room.Entities.LoadEntity(playerTag)
+		// if playerStruct == nil {
+		// 	fmt.Println("Uh oh")
+		// }
+		tmpPlayer := playerStruct.(*Player)  // need to create a temporary copy to edit: https://stackoverflow.com/questions/17438253/accessing-struct-fields-inside-a-map-value-without-copying
 
 		if msg.Data[0] == 'X' { //88 = "X"
 			x, err := strconv.ParseFloat(string(msg.Data[1:]), 64)
@@ -156,15 +158,13 @@ func echo(w http.ResponseWriter, r *http.Request) {
 				x = 154
 			}	
 
-			// Move Owned Item
-			if tmpPlayer.Held != "" {
-				tmpItem := ownedItems.LoadItem(tmpPlayer.Held)
-				tmpItem.X += x - tmpPlayer.X
-				ownedItems.StoreItem(tmpPlayer.Held, tmpItem)
+			// Move Owned Item (tmpPlayer.held is an EntitiyInterface)
+			if tmpPlayer.held != nil {
+				tmpPlayer.held.SetX(tmpPlayer.held.GetX() + x - tmpPlayer.X)
 			}
 			
 			tmpPlayer.X = x
-			Updates.Store(playerTag, tmpPlayer)
+			room.Entities.StoreEntity(playerTag, tmpPlayer)
 		} else if msg.Data[0] == 'Y' { //89 = "Y"
 			y, err := strconv.ParseFloat(string(msg.Data[1:]), 64)
 			if err != nil {
@@ -177,15 +177,13 @@ func echo(w http.ResponseWriter, r *http.Request) {
 				y = 99
 			}
 
-			// Move Owned Item
-			if tmpPlayer.Held != "" {
-				tmpItem := ownedItems.LoadItem(tmpPlayer.Held)
-				tmpItem.Y += y - tmpPlayer.Y 
-				ownedItems.StoreItem(tmpPlayer.Held, tmpItem)
+			// Move Owned Item (tmpPlayer.held is an EntitiyInterface)
+			if tmpPlayer.held != nil {
+				tmpPlayer.held.SetY(tmpPlayer.held.GetY() + y - tmpPlayer.Y)
 			}
 
 			tmpPlayer.Y = y
-			Updates.Store(playerTag, tmpPlayer)
+			room.Entities.StoreEntity(playerTag, tmpPlayer)
 		}
 	})
 
@@ -208,11 +206,11 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	reliableChannel.OnMessage(func(msg webrtc.DataChannelMessage) {
 		// fmt.Printf("Message from DataChannel '%s': '%s'\n", reliableChannel.Label(), string(msg.Data))
 
-		playerStruct, ok := Updates.Load(playerTag)
-		if ok == false {
-			fmt.Println("Uh oh")
-		}
-		tmpPlayer := playerStruct.(Player)  // need to create a temporary copy to edit: https://stackoverflow.com/questions/17438253/accessing-struct-fields-inside-a-map-value-without-copying
+		playerStruct := room.Entities.LoadEntity(playerTag)
+		// if playerStruct == nil {
+		// 	fmt.Println("Uh oh")
+		// }
+		tmpPlayer := playerStruct.(*Player)  // need to create a temporary copy to edit: https://stackoverflow.com/questions/17438253/accessing-struct-fields-inside-a-map-value-without-copying
 
 		if msg.Data[0] == 'X' { //88 = "X"
 			x, err := strconv.ParseFloat(string(msg.Data[1:]), 64)
@@ -227,15 +225,13 @@ func echo(w http.ResponseWriter, r *http.Request) {
 				x = 154
 			}	
 
-			// Move Owned Item
-			if tmpPlayer.Held != "" {
-				tmpItem := ownedItems.LoadItem(tmpPlayer.Held)
-				tmpItem.X += x - tmpPlayer.X
-				ownedItems.StoreItem(tmpPlayer.Held, tmpItem)
+			// Move Owned Item (tmpPlayer.held is an EntitiyInterface)
+			if tmpPlayer.held != nil {
+				tmpPlayer.held.SetX(tmpPlayer.held.GetX() + x - tmpPlayer.X)
 			}
 			
 			tmpPlayer.X = x
-			Updates.Store(playerTag, tmpPlayer)
+			room.Entities.StoreEntity(playerTag, tmpPlayer)
 		} else if msg.Data[0] == 'Y' { //89 = "Y"
 			y, err := strconv.ParseFloat(string(msg.Data[1:]), 64)
 			if err != nil {
@@ -248,27 +244,22 @@ func echo(w http.ResponseWriter, r *http.Request) {
 				y = 99
 			}
 
-			// Move Owned Item
-			if tmpPlayer.Held != "" {
-				tmpItem := ownedItems.LoadItem(tmpPlayer.Held)
-				tmpItem.Y += y - tmpPlayer.Y 
-				ownedItems.StoreItem(tmpPlayer.Held, tmpItem)
+			// Move Owned Item (tmpPlayer.held is an EntitiyInterface)
+			if tmpPlayer.held != nil {
+				tmpPlayer.held.SetY(tmpPlayer.held.GetY() + y - tmpPlayer.Y)
 			}
 
 			tmpPlayer.Y = y
-			Updates.Store(playerTag, tmpPlayer)
+			room.Entities.StoreEntity(playerTag, tmpPlayer)
 		} else if msg.Data[0] == 'D' {
 			//dropped item
-			if tmpPlayer.Held != "" {
-				tmpItem := ownedItems.DeleteItem(tmpPlayer.Held)
-				k := tmpPlayer.Held
-				tmpItem.Owner = ""
-				tmpPlayer.Held = ""
-
-				strayItems.StoreItem(k, tmpItem)
-				Updates.Store(playerTag, tmpPlayer)
+			if tmpPlayer.held != nil {
+				room.Entities.StoreEntity(tmpPlayer.held.Key(), tmpPlayer.held)
+				
+				tmpPlayer.held = nil
+				room.Entities.StoreEntity(playerTag, tmpPlayer)
 			}
-		} else if msg.Data[0] == 'P' && tmpPlayer.Held == "" {
+		} else if msg.Data[0] == 'P' && tmpPlayer.held == nil {
 			// Picked Up Item
 			msg.Data = msg.Data[1:]
 			dataSlice := strings.Split(string(msg.Data), ",")
@@ -286,12 +277,10 @@ func echo(w http.ResponseWriter, r *http.Request) {
 				fmt.Println(err)
 			}
 
-			gotItem, itemKey := strayItems.TryPickUpItem(&ownedItems, playerTag, hitX, hitY)
+			gotItem, _ := room.Entities.TryPickUpItem(tmpPlayer, hitX, hitY)
 
 			if gotItem {
-				tmpPlayer.Held = itemKey
-
-				tmpItem := ownedItems.LoadItem(itemKey)
+				tmpItem := tmpPlayer.held.(*Item)
 
 				if sDir == "" {
 					sDir = "l"
@@ -310,8 +299,8 @@ func echo(w http.ResponseWriter, r *http.Request) {
 					tmpItem.Y += 4
 				}
 
-				ownedItems.StoreItem(itemKey, tmpItem)
-				Updates.Store(playerTag, tmpPlayer)
+				tmpPlayer.held = tmpItem
+				room.Entities.StoreEntity(playerTag, tmpPlayer)
 
 				// Send this player the item offset so they can render it with no delay clientside
 				str := "I" + fmt.Sprintf("%.1f", tmpItem.X-tmpPlayer.X)  + "," + fmt.Sprintf("%.1f", tmpItem.Y-tmpPlayer.Y)

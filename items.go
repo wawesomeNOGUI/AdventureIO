@@ -70,8 +70,8 @@ func (c *EntityContainer) isItemHere(x, y float64) (bool, string) {
 
 // TryPickUpItem allows an entity to request trying to pick up an item.
 // The function uses EntityContainer mutex so only one goroutine can try to pick up an item at a time (concurrent safe)
-// If the entity can pick up the item, set the entity's held member to the pointer to the Item
-// put the item in the ownedItems map (parameter o) and then return true, the Item key
+// If the ref entity can pick up the item, set the ref entity's held member to the pointer to the Item
+// and then return true, the Item key
 func (c *EntityContainer) TryPickUpItem(ref EntityInterface, x, y float64) (bool, string) {
 	c.mu.Lock()
     defer c.mu.Unlock()
@@ -80,6 +80,7 @@ func (c *EntityContainer) TryPickUpItem(ref EntityInterface, x, y float64) (bool
 
 	if itemHere {
 		ref.SetHeld(c.DeleteEntity(itemKey))
+		return true, itemKey
 	}
 
 	return false, ""
