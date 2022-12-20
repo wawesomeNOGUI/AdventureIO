@@ -56,6 +56,8 @@
 <script>
 
 var ws;
+var sdpSends = 0;
+var animating = false;
 
 window.addEventListener("load", function(evt) {
   ws = new WebSocket("ws://127.0.0.1:80/echo");  //address to connect to, /echo triggers go echo function
@@ -78,7 +80,6 @@ window.addEventListener("load", function(evt) {
   }
 
 //=====================WEBRTC===========================
-
   const pc = new RTCPeerConnection({
     iceServers: [
       {
@@ -86,9 +87,6 @@ window.addEventListener("load", function(evt) {
       }
     ]
   })
-
-  var sdpSends = 0;
-  var animating = false;
 
   pc.onsignalingstatechange = e => console.log(pc.signalingState)
   pc.oniceconnectionstatechange = e => {
