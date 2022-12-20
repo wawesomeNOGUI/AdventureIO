@@ -10,7 +10,7 @@ func newPlayer(tag string, x, y float64) *Player {
 	p := Player{}
 	p.X = x 
 	p.Y = y
-	p.Kind = "p"
+	p.K = "p"
 	p.key = tag
 
 	return &p

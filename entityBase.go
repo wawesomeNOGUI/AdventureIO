@@ -8,7 +8,7 @@ type EntityBase struct {
 	s float64	// speed, how much can move each update (not exported)
 	vX float64  // current direction vectors (normalized = hypotenuse of 1) 
 	vY float64
-	Kind string // what kind of entity
+	K string // what kind of entity
 	held EntityInterface // should be a pointer reference to an entity, this entity will only be accessed through parent entity
 	room *Room
 }
@@ -26,7 +26,7 @@ func (e *EntityBase) Key() string {
 }
 
 func (e *EntityBase) GetKind() string {
-	return e.Kind
+	return e.K
 }
 
 func (e *EntityBase) GetX() float64 {

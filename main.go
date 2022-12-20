@@ -397,10 +397,7 @@ func sendGameStateUnreliableLoop() {
 				// here z is a pointer to a Room
 				s := z.Entities.SerializeEntities()
 
-				for k, v := range z.Entities.Players() {
-					if v == nil {
-						continue
-					}
+				for k, _ := range z.Entities.Players() {
 					unreliableChans.SendToPlayer(k, s)
 				}
 
