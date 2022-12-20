@@ -8,6 +8,12 @@ func InitializeRooms(m *sync.Map) {
 
 func InitializeEntities(m *sync.Map) {
 	// List all the entities you want here
+	r, _ := m.Load("r1")
+	tmpR := r.(*Room)
+	tmpR.Entities.StoreEntity(newItem("sword", 20, 20))
+	tmpR.Entities.StoreEntity(newItem("sword", 20, 40))
+	m.Store("r1", tmpR)
+
 
 	/*
 	m.Store(newBat(50, 75))

@@ -391,15 +391,19 @@ func echo(w http.ResponseWriter, r *http.Request) {
 // Sends current game state unreliably to all players
 func sendGameStateUnreliableLoop() {
 	for {
-		time.Sleep(time.Millisecond * 50) //50 milliseconds = 20 updates per second
+		time.Sleep(time.Millisecond * 500) //50 milliseconds = 20 updates per second
 
 		Rooms.Range(func(rk, rv interface{}) bool {
 			switch z := rv.(type) {
 			case *Room:
 				// here z is a pointer to a Room
 				s := z.Entities.SerializeEntities()
+				fmt.Println(z.Entities.Entities())
 
-				for k, _ := range z.Entities.Players() {
+				for k, v := range z.Entities.Players() {
+					if v == nil {
+						continue
+					}
 					unreliableChans.SendToPlayer(k, s)
 				}
 
@@ -423,7 +427,7 @@ func sendGameStateUnreliableLoop() {
 var Rooms sync.Map
 func initGameVars() {
 	InitializeRooms(&Rooms)
-	//InitializeEntities(&entities)
+	InitializeEntities(&Rooms)
 }
 
 // All server orchestrated game logic
