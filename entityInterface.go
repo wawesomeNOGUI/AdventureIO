@@ -17,7 +17,8 @@ type EntityInterface interface {
 	GetX() float64
 	SetX(float64)
 	GetY() float64
-	SetY(float64) 
+	SetY(float64)
+	GetRoom() *Room 
 }
 
 // recursively traverse all entities being held by the caller entity 
@@ -67,6 +68,22 @@ func (c *EntityContainer) Entities() map[string]EntityInterface {
 	tmpMap := make(map[string]EntityInterface)
 	for k, v := range c.entities {
 		tmpMap[k] = v
+	}
+
+	return tmpMap
+}
+
+// Return map of all player entities currently contained in the EntityContainer
+func (c *EntityContainer) Players() map[string]*Player {
+	c.mu.Lock()
+    defer c.mu.Unlock()
+
+	tmpMap := make(map[string]*Player)
+	for k, v := range c.entities {
+		switch z := v.(type) {
+		case *Player:
+			tmpMap[k] = z
+		}
 	}
 
 	return tmpMap

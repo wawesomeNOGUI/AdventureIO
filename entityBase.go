@@ -10,6 +10,7 @@ type EntityBase struct {
 	vY float64
 	Kind string // what kind of entity
 	held EntityInterface // should be a pointer reference to an entity, this entity will only be accessed through parent entity
+	room *Room
 }
 
 func (e *EntityBase) Held() EntityInterface {
@@ -42,5 +43,9 @@ func (e *EntityBase) GetY() float64 {
 
 func (e *EntityBase) SetY(y float64) {
 	e.Y = y
+}
+
+func (e *EntityBase) GetRoom() *Room {
+	return e.room
 }
 

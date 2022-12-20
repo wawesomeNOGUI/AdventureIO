@@ -2,6 +2,10 @@ package main
 
 import "sync"
 
+func InitializeRooms(m *sync.Map) {
+	m.Store(newRoom("r1", defaultRoomUpdate, nil, nil, nil, nil))
+}
+
 func InitializeEntities(m *sync.Map) {
 	// List all the entities you want here
 	m.Store(newBat(50, 75))

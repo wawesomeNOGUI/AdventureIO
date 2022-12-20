@@ -9,7 +9,7 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"os"
+	//"os"
 	//"math"
 	//"reflect"
 	//"encoding/binary"
@@ -94,8 +94,12 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			playerTag = strconv.Itoa(NumberOfPlayers)
 			fmt.Println(playerTag)
 
-			//Store a slice for player x, y, and other data (player{x float64, y float64, holding item})
-			Updates.Store(playerTag, Player{playerTag, 50, 50, ""})
+			//Store a pointer to a Player Struct
+			v, ok := Rooms.Load("r1")
+			if !ok {
+				fmt.Println("Couldn't find room")
+			}
+			v.(*Room).Entities.StoreEntity(playerTag, newPlayer(playerTag, 50, 50))
 
 		} else if connectionState == 5 || connectionState == 6 || connectionState == 7 {
 			Updates.Delete(playerTag)
@@ -114,6 +118,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	//====================No retransmits, ordered dataChannel=======================
 	// Register channel opening handling
 	dataChannel.OnOpen(func() {
+		unreliableChans.AddPlayerChan(playerTag, dataChannel)
 		/*
 		for {
 			time.Sleep(time.Millisecond * 50) //50 milliseconds = 20 updates per second
@@ -189,17 +194,13 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	//=========================Reliable DataChannel=================================
 	// Register channel opening handling
 	reliableChannel.OnOpen(func() {
+		reliableChans.AddPlayerChan(playerTag, reliableChannel)
 
 		//Send Client their playerTag so they know who they are in the Updates Array
 		sendErr := reliableChannel.SendText("T" + playerTag)
 		if sendErr != nil {
 			panic(err)
 		}
-
-		//add this channel's pointer to list so can broadcast messages to all players
-		reliableChans.AddPlayerChan(playerTag, reliableChannel)
-		unreliableChans.AddPlayerChan(playerTag, dataChannel)
-
 	})
 
 	// Register message handling (Data all served as a bytes slice []byte)
@@ -403,34 +404,21 @@ func sendGameStateUnreliableLoop() {
 	for {
 		time.Sleep(time.Millisecond * 50) //50 milliseconds = 20 updates per second
 
-		// Players
-		tmpMap := make(map[string]interface{})
-		Updates.Range(func(k, v interface{}) bool {
-			tmpMap[k.(string)] = v.(Player)
+		Rooms.Range(func(rk, rv interface{}) bool {
+			switch z := rv.(type) {
+			case *Room:
+				// here z is a pointer to a Room
+				s := z.Entities.SerializeEntities()
+
+				for k, _ := range z.Entities.Players() {
+					unreliableChans.SendToPlayer(k, s)
+				}
+
+			default:
+				// no match; here z has the same type as v (interface{})
+			}	
 			return true
 		})
-
-		// Entities
-		entities.Range(func(k, v interface{}) bool {
-			tmpMap[k.(string)] = v
-			return true
-		})
-
-		// Items
-		for k, v := range strayItems.GetItems() {
-			tmpMap[k] = v
-		}
-
-		for k, v := range ownedItems.GetItems() {
-			tmpMap[k] = v
-		}
-
-		jsonTemp, err := json.Marshal(tmpMap)
-		if err != nil {
-			panic(err)
-		}
-
-		unreliableChans.Broadcast(string(jsonTemp))
 	}
 }
 
@@ -438,30 +426,15 @@ func sendGameStateUnreliableLoop() {
 
 // will contain items that can be picked up by players (mutex)
 // ItemContainer & Item defined in types.go
-var strayItems ItemContainer = ItemContainer{items: make(map[string]Item)} 
+//var strayItems ItemContainer = ItemContainer{items: make(map[string]Item)} 
 // will contain items with the key being the item, and each item has an Owner tag set to the playerTag who owns it
-var ownedItems ItemContainer = ItemContainer{items: make(map[string]Item)}
+//var ownedItems ItemContainer = ItemContainer{items: make(map[string]Item)}
 
 // var entities EntityContainer = EntityContainer{entities: make(map[string]Entity)}
-var entities sync.Map
-
-var itemData []Item
+var Rooms sync.Map
 func initGameVars() {
-	for i := 0; i < len(itemData); i++ {
-		strayItems.StoreItem(itemData[i].Kind + strconv.Itoa(i), itemData[i])
-	}
-
-	/*
-	for i := 0; i < len(entityData); i++ {
-		if entityData[i].Kind == "bat" {
-			entityData[i].initializeBat()
-		} else if entityData[i].Kind == "drg" {
-			entityData[i].initializeDragon()  
-		}
-		entities.StoreEntity(entityData[i].Kind + strconv.Itoa(i), entityData[i])
-	}
-	*/
-	InitializeEntities(&entities)
+	InitializeRooms(&Rooms)
+	//InitializeEntities(&entities)
 }
 
 // All server orchestrated game logic
@@ -469,28 +442,22 @@ func gameLoop() {
 	for {
 		time.Sleep(time.Millisecond * 16)  // 16 ms is a little faster than 60 updates per second
 
-		// Update Entities
-		entities.Range(func(k, v interface{}) bool {
+		// Update Rooms
+		Rooms.Range(func(k, v interface{}) bool {
 			switch z := v.(type) {
-			case *Bat:
-				// here z is a pointer to a Bat
-				if z.Held == "" {
-					z.tryPickUpItem(k.(string), &strayItems, &ownedItems)
-				}
-			// case Dragon:
-				// here z has type S
+			case *Room:
+				// here z is a pointer to a Room
+				z.updateFunc(z)
 			default:
 				// no match; here z has the same type as v (interface{})
-			}
-
-			v.(EntityInterface).behaviorFunc()			
+			}	
 			return true
 		})
-
 	}
 }
 
 func main() {
+	/*
 	dat, err := os.ReadFile("./gameData/itemData.json")
 	if err != nil {
 		panic(err)
@@ -499,6 +466,7 @@ func main() {
 	if err := json.Unmarshal(dat, &itemData); err != nil {
 		panic(err)
 	}
+	*/
 
 	initGameVars()
 
