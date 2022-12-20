@@ -164,7 +164,6 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			}
 			
 			tmpPlayer.X = x
-			room.Entities.StoreEntity(playerTag, tmpPlayer)
 		} else if msg.Data[0] == 'Y' { //89 = "Y"
 			y, err := strconv.ParseFloat(string(msg.Data[1:]), 64)
 			if err != nil {
@@ -183,8 +182,9 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			}
 
 			tmpPlayer.Y = y
-			room.Entities.StoreEntity(playerTag, tmpPlayer)
 		}
+
+		room.Entities.StoreEntity(playerTag, tmpPlayer)
 	})
 
 	//==============================================================================
@@ -231,7 +231,6 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			}
 			
 			tmpPlayer.X = x
-			room.Entities.StoreEntity(playerTag, tmpPlayer)
 		} else if msg.Data[0] == 'Y' { //89 = "Y"
 			y, err := strconv.ParseFloat(string(msg.Data[1:]), 64)
 			if err != nil {
@@ -250,14 +249,12 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			}
 
 			tmpPlayer.Y = y
-			room.Entities.StoreEntity(playerTag, tmpPlayer)
 		} else if msg.Data[0] == 'D' {
 			//dropped item
 			if tmpPlayer.held != nil {
 				room.Entities.StoreEntity(tmpPlayer.held.Key(), tmpPlayer.held)
 				
 				tmpPlayer.held = nil
-				room.Entities.StoreEntity(playerTag, tmpPlayer)
 			}
 		} else if msg.Data[0] == 'P' && tmpPlayer.held == nil {
 			// Picked Up Item
@@ -300,13 +297,14 @@ func echo(w http.ResponseWriter, r *http.Request) {
 				}
 
 				tmpPlayer.held = tmpItem
-				room.Entities.StoreEntity(playerTag, tmpPlayer)
 
 				// Send this player the item offset so they can render it with no delay clientside
 				str := "I" + fmt.Sprintf("%.1f", tmpItem.X-tmpPlayer.X)  + "," + fmt.Sprintf("%.1f", tmpItem.Y-tmpPlayer.Y)
 				reliableChans.SendToPlayer(playerTag, str)
 			}
 		}
+
+		room.Entities.StoreEntity(playerTag, tmpPlayer)
 	})
 
 	//==============================================================================

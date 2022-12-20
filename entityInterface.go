@@ -25,8 +25,9 @@ type EntityInterface interface {
 func TraverseEntities(e EntityInterface, output map[string]EntityInterface) {
 	if e.Held() != nil {
 		TraverseEntities(e.Held(), output)
-		output[e.Key()] = e
 	}
+
+	output[e.Key()] = e
 }
 
 // For storing pointers to entities with mutex so goroutines can access with no contention
@@ -95,8 +96,7 @@ func (c *EntityContainer) SerializeEntities() string {
     defer c.mu.Unlock()
 
 	tmpMap := make(map[string]EntityInterface)
-	for k, v := range c.entities {
-		tmpMap[k] = v
+	for _, v := range c.entities {
 		TraverseEntities(v, tmpMap)
 	}
 

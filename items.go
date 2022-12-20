@@ -79,7 +79,8 @@ func (c *EntityContainer) TryPickUpItem(ref EntityInterface, x, y float64) (bool
 	itemHere, itemKey := c.isItemHere(x, y)
 
 	if itemHere {
-		ref.SetHeld(c.DeleteEntity(itemKey))
+		ref.SetHeld(c.entities[itemKey])
+		delete(c.entities, itemKey)
 		return true, itemKey
 	}
 
