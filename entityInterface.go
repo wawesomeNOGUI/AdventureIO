@@ -95,7 +95,8 @@ func (c *EntityContainer) SerializeEntities() string {
     defer c.mu.Unlock()
 
 	tmpMap := make(map[string]EntityInterface)
-	for _, v := range c.entities {
+	for k, v := range c.entities {
+		tmpMap[k] = v
 		TraverseEntities(v, tmpMap)
 	}
 
