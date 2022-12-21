@@ -142,10 +142,10 @@ var render = function () {
         ctx.fillRect(pX, pY, 4, 4);
       }
     } else if (previousUpdate.hasOwnProperty(key)) { // its an item or entity
-      if (Updates[key].hasOwnProperty("Owner") && Updates[key].Owner == playerTag) {
+      if (key == ownedItemXYOffset[0]) {
         // Draw local player's item
         //ctx.drawImage(swordSprite, pX + Math.round(ownedItemXYOffset[0]), pY + Math.round(ownedItemXYOffset[1]));
-        drawColorSprite(ctx, spriteMap[Updates[key].K], "#FF00FF", pX + Math.round(ownedItemXYOffset[0]), pY + Math.round(ownedItemXYOffset[1]));
+        drawColorSprite(ctx, spriteMap[Updates[key].K], "#FF00FF", pX + Math.round(ownedItemXYOffset[1]), pY + Math.round(ownedItemXYOffset[2]));
       } else {
         var x = smoothstep(previousUpdate[key].X, Updates[key].X, t);
         var y = smoothstep(previousUpdate[key].Y, Updates[key].Y, t);
@@ -224,7 +224,8 @@ var keyPress = function() {
 
 window.addEventListener("keydown", function (event) {
   // Single sends
-  if (event.keyCode == 32 && !keysDown[32]) {  // space
+  if (event.keyCode == 32 && !keysDown[32] && ownedItemXYOffset[0] != 0) {  // space
+    ownedItemXYOffset = [0, 0, 0]
     TCPChan.send("D");  // drop item
   } else if (event.keyCode == 37 && !keysDown[37]) { // left
     pX = Math.round(pX - speed);
