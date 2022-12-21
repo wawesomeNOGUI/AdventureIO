@@ -12,8 +12,9 @@ func InitializeEntities(m *sync.Map) {
 	tmpR := r.(*Room)
 	tmpR.Entities.StoreEntity(newItem("sword", 20, 20))
 	tmpR.Entities.StoreEntity(newItem("sword", 20, 40))
+	//tmpR.Entities.StoreEntity(newBat(tmpR, 50, 75))
+	tmpR.Entities.StoreEntity(newBat(tmpR, 10, 15))
 	m.Store("r1", tmpR)
-
 
 	/*
 	m.Store(newBat(50, 75))

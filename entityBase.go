@@ -49,3 +49,7 @@ func (e *EntityBase) GetRoom() *Room {
 	return e.room
 }
 
+func (e *EntityBase) SetRoom(r *Room) {
+	e.room = r
+}
+

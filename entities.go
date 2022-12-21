@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"math"
+	// "math"
 )
 
 // all entities implement EntityInterface 
@@ -71,7 +71,7 @@ func (b *Bat) Update() {
 	} else if b.waitCounter--; b.waitCounter < 0 {	// chase items
 
 		// we can run the non concurrent safe one here cause UpdateEntities() locks the mutex to the map of entities
-		itemKey, vX, vY := b.room.Entities.nonConcurrentSafeClosestEntity(b.key, 20, 100, b.X, b.Y)
+		itemKey, vX, vY := b.room.Entities.nonConcurrentSafeClosestItem(b.key, 20, 100, b.X, b.Y)
 
 		if itemKey != "" {
 			b.vX = vX

@@ -96,3 +96,41 @@ func (c *EntityContainer) nonConcurrentSafeTryPickUpItem(ref EntityInterface, x,
 	return false, ""
 }
 
+// run the below one for concurrent safe calling
+func (c *EntityContainer) nonConcurrentSafeClosestItem(self string, closeParam, d, x, y float64) (string, float64, float64) {
+	var closest string
+	var dX float64
+	var dY float64
+
+	for k, v := range c.entities {
+		if self == k {
+			continue
+		}
+		_, ok := v.(*Item)  // check if EntityInterface holds type Item
+		if !ok {
+			continue
+		}
+
+		tmpDX := v.GetX() - x 
+		tmpDY := v.GetY() - y
+		tmpD := math.Sqrt((tmpDX)*(tmpDX) + (tmpDY)*(tmpDY))
+
+
+		if tmpD < d {
+			closest = k
+			d = tmpD
+			dX = tmpDX
+			dY = tmpDY
+		}
+
+		if d < closeParam {  // so don't have to search through all entity just return early after finding pretty close one
+			break
+		}
+	}
+	if d != 0 {
+		return closest, dX/d, dY/d
+	} else {
+		return "", 0, 0
+	}
+}
+

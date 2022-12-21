@@ -296,8 +296,8 @@ func echo(w http.ResponseWriter, r *http.Request) {
 					tmpPlayer.held.SetY(tmpPlayer.held.GetY() + 4)
 				}
 
-				// Send this player the item offset so they can render it with no delay clientside
-				str := "I" + fmt.Sprintf("%.1f", tmpPlayer.held.GetX()-tmpPlayer.X)  + "," + fmt.Sprintf("%.1f", tmpPlayer.held.GetY()-tmpPlayer.Y)
+				// Send this player the item key and offset so they can render it with no delay clientside
+				str := "I" + tmpPlayer.held.Key() + "," + fmt.Sprintf("%.1f", tmpPlayer.held.GetX()-tmpPlayer.X)  + "," + fmt.Sprintf("%.1f", tmpPlayer.held.GetY()-tmpPlayer.Y)
 				reliableChans.SendToPlayer(playerTag, str)
 			}
 		}
