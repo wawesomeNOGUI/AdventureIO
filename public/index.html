@@ -37,7 +37,7 @@
 
   //Player Vars
   var playerTag;
-  var ownedItemXYOffset;
+  var ownedItemXYOffset = [0, 0, 0];
   var Updates;
   var previousUpdate;
   var interpolateInc = 0.1;
@@ -58,6 +58,13 @@
 var ws;
 var sdpSends = 0;
 var animating = false;
+
+if (performance.navigation.type == performance.navigation.TYPE_RELOAD) {
+  animating = false;
+  console.info( "This page is reloaded" );
+} else {
+  console.info( "This page is not reloaded");
+}
 
 window.addEventListener("load", function(evt) {
   ws = new WebSocket("ws://127.0.0.1:80/echo");  //address to connect to, /echo triggers go echo function
