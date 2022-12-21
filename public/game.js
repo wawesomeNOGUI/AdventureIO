@@ -117,7 +117,7 @@ function checkForPixelPerfectHit() {
 //https://en.wikipedia.org/wiki/List_of_video_game_console_palettes#Atari_2600
 //(inspect element to get the hex color values from the atari color table)
 var render = function () {
-  if (Updates == undefined || previousUpdate == undefined) {
+  if (Updates == undefined || previousUpdate == undefined || Updates[playerTag] == undefined) {
     return;
   }
 
@@ -142,15 +142,15 @@ var render = function () {
         ctx.fillRect(pX, pY, 4, 4);
       }
     } else if (previousUpdate.hasOwnProperty(key)) { // its an item or entity
-      if (Updates[key].hasOwnProperty("Owner") && Updates[key].Owner == playerTag) {
+      if (key == ownedItemXYOffset[0]) {
         // Draw local player's item
         //ctx.drawImage(swordSprite, pX + Math.round(ownedItemXYOffset[0]), pY + Math.round(ownedItemXYOffset[1]));
-        drawColorSprite(ctx, spriteMap[Updates[key].Kind], "#FF00FF", pX + Math.round(ownedItemXYOffset[0]), pY + Math.round(ownedItemXYOffset[1]));
+        drawColorSprite(ctx, spriteMap[Updates[key].K], "#FF00FF", pX + Math.round(ownedItemXYOffset[1]), pY + Math.round(ownedItemXYOffset[2]));
       } else {
         var x = smoothstep(previousUpdate[key].X, Updates[key].X, t);
         var y = smoothstep(previousUpdate[key].Y, Updates[key].Y, t);
 
-        ctx.drawImage(spriteMap[Updates[key].Kind], Math.round(x), Math.round(y));
+        ctx.drawImage(spriteMap[Updates[key].K], Math.round(x), Math.round(y));
         // ctx.drawImage(spriteMap[Updates[key].Kind], Updates[key].X, Updates[key].Y);
 
       }
@@ -159,7 +159,7 @@ var render = function () {
 
   // If local player not holding item do Item hit detection
   // if item goes inside player, pick up item
-  if (Updates[playerTag].Held == "" && checkForPixelPerfectHit()) {
+  if (checkForPixelPerfectHit()) {
     TCPChan.send("P" + hitX + "," + hitY + "," + hitDirection);
   }
 }
@@ -224,7 +224,8 @@ var keyPress = function() {
 
 window.addEventListener("keydown", function (event) {
   // Single sends
-  if (event.keyCode == 32 && !keysDown[32]) {  // space
+  if (event.keyCode == 32 && !keysDown[32] && ownedItemXYOffset[0] != 0) {  // space
+    ownedItemXYOffset = [0, 0, 0]
     TCPChan.send("D");  // drop item
   } else if (event.keyCode == 37 && !keysDown[37]) { // left
     pX = Math.round(pX - speed);

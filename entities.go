@@ -1,112 +1,46 @@
 package main
 
 import (
-	"sync"
 	"fmt"
+	// "math"
 )
-// Structs and Movement Functions For Game Entities
-/*
-type Entity struct {
-	X float64
-	Y float64
-	s float64   // speed, how much can move each update (not exported)
-	Kind string // what kind of entity
-	Held string // key of item the entity holds
-	behaviorFunc func(*Entity)
-}
 
-type EntityContainer struct {
-	mu sync.Mutex
-	entities map[string]Entity
-}
-
-func (c *EntityContainer) LoadEntity(k string) Entity {
-	c.mu.Lock()
-    defer c.mu.Unlock()
-
-	return c.entities[k]
-}
-
-func (c *EntityContainer) StoreEntity(k string, v Entity) {
-	c.mu.Lock()
-    defer c.mu.Unlock()
-
-	c.entities[k] = v
-}
-
-func (c *EntityContainer) DeleteEntity(k string) Entity {
-	c.mu.Lock()
-    defer c.mu.Unlock()
-
-	tmpEntity := c.entities[k]
-	delete(c.entities, k)
-
-	return tmpEntity
-}
-
-// Return map of all Entities currently contained in the EntityContainer
-func (c *EntityContainer) GetEntities() map[string]Entity {
-	c.mu.Lock()
-    defer c.mu.Unlock()
-
-	tmpMap := make(map[string]Entity)
-	for k, v := range c.entities {
-		tmpMap[k] = v
-	}
-
-	return tmpMap
-}
-*/
-func InitializeEntities(m *sync.Map) {
-	// List all the entities you want here
-	m.Store(newBat(50, 75))
-	m.Store(newBat(50, 6))
-}
-
-type EntityInterface interface {
-	behaviorFunc()
-}
-
-type EntityBase struct {
-	X float64
-	Y float64
-	s float64	// speed, how much can move each update (not exported)
-	vX float64  // current direction vectors (normalized = hypotenuse of 1) 
-	vY float64
-	Kind string // what kind of entity
-}
+// all entities implement EntityInterface 
+// this file has monsters, animals, things that move
 
 //==================Bats=======================
 type Bat struct {
 	EntityBase
-	Held string // bats can pick up items
 	heldCounter int	// how long the bat has held this item, it drops it after the counter reaches a certain point
 	waitCounter int // time delay before allowed to fly towards items again
 }
 
 var numOfBats int
-func newBat(x, y float64) (string, *Bat) {
+func newBat(room *Room, x, y float64) (string, *Bat) {
 	b := Bat{}
 	b.X = x 
 	b.Y = y
+	b.vX = 0.5
+	b.vY = 0.5
 	b.s = 1
-	b.Kind = "bat"	
+	b.K = "bat"	
+	b.room = room
 
 	numOfBats++
-	return fmt.Sprintf("bat%d", numOfBats), &b
+	b.key = fmt.Sprintf("bat%d", numOfBats)
+
+	return b.key, &b
 }
 
-var heldCounterThreshold int = 100
-var waitCounterThreshold int = 200
-func (b *Bat) behaviorFunc() {
+const heldCounterThreshold = 100
+const waitCounterThreshold = 200
+func (b *Bat) Update() {
 	b.X += b.vX * b.s
 	b.Y += b.vY * b.s
 
-	if b.Held != "" {
-		tmpItem := ownedItems.LoadItem(b.Held)
-		tmpItem.X += b.vX * b.s
-		tmpItem.Y += b.vY * b.s
-		ownedItems.StoreItem(b.Held, tmpItem)
+	if b.held != nil {
+		b.held.SetX(b.held.GetX() + b.vX * b.s)
+		b.held.SetY(b.held.GetY() + b.vY * b.s)
 
 		b.heldCounter++
 
@@ -116,34 +50,41 @@ func (b *Bat) behaviorFunc() {
 			} else if b.Y < 15 || b.Y > 90 {
 				goto WallCheck
 			}
-			ownedItems.DeleteItem(b.Held)
-			k := b.Held
-			tmpItem.Owner = ""
-			b.Held = ""
-			b.heldCounter = 0
-			b.waitCounter = waitCounterThreshold
 
 			// fly away from dropped item
-			if tmpItem.X > b.X && b.vX > 0 {
+			if b.held.GetX() > b.X && b.vX > 0 {
 				b.vX = -b.vX
 			}
-			if tmpItem.Y > b.Y && b.vY > 0 {
+			if b.held.GetY() > b.Y && b.vY > 0 {
 				b.vY = -b.vY
 			}
 			
-			tmpItem.X -= b.vX * 5
-			tmpItem.Y -= b.vY * 5
+			b.held.SetX(b.held.GetX() + b.vX * 5)
+			b.held.SetY(b.held.GetY() + b.vY * 5)
 
-			strayItems.StoreItem(k, tmpItem)
+			// non concurrent safe store here is ok cause UpdateEntities() locks mutex
+			b.room.Entities.entities[b.held.Key()] = b.held
+			b.held = nil
+			b.heldCounter = 0
+			b.waitCounter = waitCounterThreshold
 		}
 	} else if b.waitCounter--; b.waitCounter < 0 {	// chase items
-		itemKey, vX, vY := strayItems.ClosestItem(20, 100, b.X, b.Y)
+
+		// we can run the non concurrent safe one here cause UpdateEntities() locks the mutex to the map of entities
+		itemKey, vX, vY := b.room.Entities.nonConcurrentSafeClosestItem(b.key, 20, 100, b.X, b.Y)
 
 		if itemKey != "" {
 			b.vX = vX
 			b.vY = vY
 		}
+
+		// fmt.Println(b.vX)
+
+		// Try to pick up an item
+		b.room.Entities.nonConcurrentSafeTryPickUpItem(b, b.X+2, b.Y+2)
 	}
+
+	// fmt.Println("flap")
 
 	WallCheck:
 
@@ -162,14 +103,6 @@ func (b *Bat) behaviorFunc() {
 		b.Y = 99
 		b.vY = -b.vY
 	}
-}
-
-func (b *Bat) tryPickUpItem(batKey string, s, o *ItemContainer) (bool) {
-	gotItem, itemKey := s.TryPickUpItem(o, batKey, b.X+2, b.Y+2)
-	if gotItem {
-		b.Held = itemKey
-	}
-	return gotItem
 }
 //==================Dragons====================
 /*

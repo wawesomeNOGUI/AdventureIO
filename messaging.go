@@ -26,7 +26,10 @@ func (c *DataChannelContainer) SendToPlayer(tag string, msg string) {
 	c.mu.Lock()
     defer c.mu.Unlock()
 
-	c.chans[tag].SendText(msg)
+	_, ok := c.chans[tag]
+	if ok {
+		c.chans[tag].SendText(msg)
+	}
 }
 
 func (c *DataChannelContainer) DeletePlayerChan(tag string) {

@@ -1,99 +1,67 @@
 package main
 
 import (
-	"sync"
 	"math"
+	"fmt"
 )
 
-// Generic structs and methods for items
+// Generic structs and methods for items (Items implement EntityInterface)
+// Items are entities that can be picked up by other entities
 
 type Item struct {
-	X float64
-	Y float64
-	Owner string  // should be a playerTag or entity key
-	Kind string   // tells what kind of item it is
+	EntityBase
 }
 
-// For storing lists of items with mutex so goroutines can access with no contention
-type ItemContainer struct {
-	mu sync.Mutex
-	items map[string]Item
+var numOfItems int
+func newItem(kind string, x, y float64) (string, *Item) {
+	i := Item{}
+	i.X = x 
+	i.Y = y
+	i.K = kind
+
+	numOfItems++
+	i.key = fmt.Sprintf(kind + "%d", numOfItems)
+
+	return i.key, &i
 }
 
-func (c *ItemContainer) LoadItem(k string) Item {
-	c.mu.Lock()
-    defer c.mu.Unlock()
+func (b *Item) Update() {
+	b.X += b.vX * b.s
+	b.Y += b.vY * b.s
 
-	return c.items[k]
-}
+	// WallCheck:
 
-func (c *ItemContainer) StoreItem(k string, v Item) {
-	c.mu.Lock()
-    defer c.mu.Unlock()
-
-	c.items[k] = v
-}
-
-func (c *ItemContainer) DeleteItem(k string) Item {
-	c.mu.Lock()
-    defer c.mu.Unlock()
-
-	tmpItem := c.items[k]
-	delete(c.items, k)
-
-	return tmpItem
-}
-
-// Return map of all Items currently contained in the ItemContainer
-func (c *ItemContainer) GetItems() map[string]Item {
-	c.mu.Lock()
-    defer c.mu.Unlock()
-
-	tmpMap := make(map[string]Item)
-	for k, v := range c.items {
-		tmpMap[k] = v
+	if b.X < 2 {
+		b.X = 2
+		b.vX = -b.vX
+	} else if b.X > 154 {
+		b.X = 154
+		b.vX = -b.vX
+	}	
+	
+	if b.Y < 2 {
+		b.Y = 2
+		b.vY = -b.vY
+	} else if b.Y > 99 {
+		b.Y = 99
+		b.vY = -b.vY
 	}
-
-	return tmpMap
 }
 
-// returns item key, and normalized vector pointing from x,y to the item
-// closeParam tells distance when the search should break cause found a close enough item
-// d is the largest search radius
-func (c *ItemContainer) ClosestItem(closeParam, d, x, y float64) (string, float64, float64) {
-	c.mu.Lock()
-    defer c.mu.Unlock()
-
-	var closest string
-	var dX float64
-	var dY float64
-
-	for k, v := range c.items {
-		tmpDX := v.X - x 
-		tmpDY := v.Y - y
-		tmpD := math.Sqrt((tmpDX)*(tmpDX) + (tmpDY)*(tmpDY))
-
-		if tmpD < d {
-			closest = k
-			d = tmpD
-			dX = tmpDX
-			dY = tmpDY
-		}
-
-		if d < closeParam {  // so don't have to search through all items just return early after finding pretty close one
-			break
-		}
-	}
-
-	return closest, dX/d, dY/d
-}
-
-func (c *ItemContainer) isItemHere(x, y float64) (bool, string) {
+func (c *EntityContainer) isItemHere(self EntityInterface, x, y float64) (bool, string) {
 	// c.mu.Lock()
     // defer c.mu.Unlock()
 
-	for k, v := range c.items {
-		d := math.Sqrt(math.Pow(x - v.X, 2) + math.Pow(y - v.Y, 2))
+	for k, v := range c.entities {
+		if v == self {
+			continue
+		}
+		_, ok := v.(*Item)  // check if EntityInterface holds type Item
+		if !ok {
+			continue
+		}
+
+		d := math.Sqrt(math.Pow(x - v.GetX(), 2) + math.Pow(y - v.GetY(), 2))
 
 		if d < 10 {
 			return true, k
@@ -103,27 +71,66 @@ func (c *ItemContainer) isItemHere(x, y float64) (bool, string) {
 	return false, ""
 } 
 
-// TryPickUpItem allows a player to request trying to pick up an item.
-// The function uses ItemContainer mutex so only one player goroutine can try to pick up an item at a time (concurrent safe)
-// If the player can pick up the item, set the Item Owned member to the playerTag or entity, 
-// put the item in the ownedItems map (parameter o) and then return true, the Item key
-func (c *ItemContainer) TryPickUpItem(o *ItemContainer, tag string, x, y float64) (bool, string) {
+// TryPickUpItem allows an entity to request trying to pick up an item.
+// The function uses EntityContainer mutex so only one goroutine can try to pick up an item at a time (concurrent safe)
+// If the ref entity can pick up the item, set the ref entity's held member to the pointer to the Item
+// and then return true, the Item key
+func (c *EntityContainer) TryPickUpItem(ref EntityInterface, x, y float64) (bool, string) {
 	c.mu.Lock()
     defer c.mu.Unlock()
 
-	o.mu.Lock()
-	defer o.mu.Unlock()
+	gotItem, itemKey := c.nonConcurrentSafeTryPickUpItem(ref, x, y)
 
-	itemHere, itemKey := c.isItemHere(x, y)
+	return gotItem, itemKey
+}
+
+func (c *EntityContainer) nonConcurrentSafeTryPickUpItem(ref EntityInterface, x, y float64) (bool, string) {
+	itemHere, itemKey := c.isItemHere(ref, x, y)
 
 	if itemHere {
-		tmpItem := c.items[itemKey]
-		tmpItem.Owner = tag
-		o.items[itemKey] = tmpItem
-
-		delete(c.items, itemKey)
+		ref.SetHeld(c.entities[itemKey])
+		delete(c.entities, itemKey)
 		return true, itemKey
 	}
 
 	return false, ""
 }
+
+// run the below one for concurrent safe calling
+func (c *EntityContainer) nonConcurrentSafeClosestItem(self string, closeParam, d, x, y float64) (string, float64, float64) {
+	var closest string
+	var dX float64
+	var dY float64
+
+	for k, v := range c.entities {
+		if self == k {
+			continue
+		}
+		_, ok := v.(*Item)  // check if EntityInterface holds type Item
+		if !ok {
+			continue
+		}
+
+		tmpDX := v.GetX() - x 
+		tmpDY := v.GetY() - y
+		tmpD := math.Sqrt((tmpDX)*(tmpDX) + (tmpDY)*(tmpDY))
+
+
+		if tmpD < d {
+			closest = k
+			d = tmpD
+			dX = tmpDX
+			dY = tmpDY
+		}
+
+		if d < closeParam {  // so don't have to search through all entity just return early after finding pretty close one
+			break
+		}
+	}
+	if d != 0 {
+		return closest, dX/d, dY/d
+	} else {
+		return "", 0, 0
+	}
+}
+
