@@ -2,7 +2,7 @@ package main
 
 import (
 	"sync"
-	"fmt"
+	 "fmt"
 	"encoding/json"
 	"math"
 )
@@ -19,6 +19,7 @@ type EntityInterface interface {
 	GetY() float64
 	SetY(float64)
 	GetRoom() *Room 
+	SetRoom(*Room)
 }
 
 // recursively traverse all entities being held by the caller entity 
@@ -30,6 +31,8 @@ func TraverseEntities(e EntityInterface, output map[string]EntityInterface) {
 	output[e.Key()] = e
 }
 
+// https://tip.golang.org/doc/go1.8#mapiter
+// https://go.dev/blog/race-detector
 // For storing pointers to entities with mutex so goroutines can access with no contention
 type EntityContainer struct {
 	mu sync.Mutex
@@ -105,6 +108,9 @@ func (c *EntityContainer) SerializeEntities() string {
 		fmt.Println(err)
 	}
 
+	// fmt.Println(string(jsonTemp))
+
+
 	return string(jsonTemp)
 }
 
@@ -118,21 +124,21 @@ func (c *EntityContainer) UpdateEntities() {
 	}
 }
 
-// returns entity key, and normalized vector pointing from x,y to the entity
-// closeParam tells distance when the search should break cause found a close enough entity
-// d is the largest search radius
-func (c *EntityContainer) ClosestEntity(closeParam, d, x, y float64) (string, float64, float64) {
-	c.mu.Lock()
-    defer c.mu.Unlock()
-
+// run the below one for concurrent safe calling
+func (c *EntityContainer) nonConcurrentSafeClosestEntity(self string, closeParam, d, x, y float64) (string, float64, float64) {
 	var closest string
 	var dX float64
 	var dY float64
 
 	for k, v := range c.entities {
+		if self == k {
+			continue
+		}
+
 		tmpDX := v.GetX() - x 
 		tmpDY := v.GetY() - y
 		tmpD := math.Sqrt((tmpDX)*(tmpDX) + (tmpDY)*(tmpDY))
+
 
 		if tmpD < d {
 			closest = k
@@ -145,6 +151,21 @@ func (c *EntityContainer) ClosestEntity(closeParam, d, x, y float64) (string, fl
 			break
 		}
 	}
+	if d != 0 {
+		return closest, dX/d, dY/d
+	} else {
+		return "", 0, 0
+	}
+}
 
-	return closest, dX/d, dY/d
+// returns entity key, and normalized vector pointing from x,y to the entity
+// closeParam tells distance when the search should break cause found a close enough entity
+// d is the largest search radius
+func (c *EntityContainer) ClosestEntity(self string, closeParam, d, x, y float64) (string, float64, float64) {
+	c.mu.Lock()
+    defer c.mu.Unlock()
+
+	itemKey, vX, vY := c.nonConcurrentSafeClosestEntity(self, closeParam, d, x, y)
+
+	return itemKey, vX, vY
 }
