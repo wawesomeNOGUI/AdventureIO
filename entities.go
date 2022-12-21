@@ -64,6 +64,11 @@ func (b *Bat) Update() {
 
 			// non concurrent safe store here is ok cause UpdateEntities() locks mutex
 			b.room.Entities.entities[b.held.Key()] = b.held
+			p, ok := b.held.(*Player)
+			if ok {
+				p.BeingHeld = ""
+				fmt.Println(p.BeingHeld)
+			}
 			b.held = nil
 			b.heldCounter = 0
 			b.waitCounter = waitCounterThreshold
@@ -71,7 +76,8 @@ func (b *Bat) Update() {
 	} else if b.waitCounter--; b.waitCounter < 0 {	// chase items
 
 		// we can run the non concurrent safe one here cause UpdateEntities() locks the mutex to the map of entities
-		itemKey, vX, vY := b.room.Entities.nonConcurrentSafeClosestItem(b.key, 20, 100, b.X, b.Y)
+		// itemKey, vX, vY := b.room.Entities.nonConcurrentSafeClosestItem(b.key, 20, 100, b.X, b.Y)
+		itemKey, vX, vY := b.room.Entities.nonConcurrentSafeClosestEntity(b.key, 20, 100, b.X, b.Y)		
 
 		if itemKey != "" {
 			b.vX = vX
@@ -81,7 +87,15 @@ func (b *Bat) Update() {
 		// fmt.Println(b.vX)
 
 		// Try to pick up an item
-		b.room.Entities.nonConcurrentSafeTryPickUpItem(b, b.X+2, b.Y+2)
+		// b.room.Entities.nonConcurrentSafeTryPickUpItem(b, b.X+2, b.Y+2)
+		gotEntity, _ := b.room.Entities.nonConcurrentSafeTryPickUpEntity(b, b.X+2, b.Y+2)
+		if gotEntity {
+			p, ok := b.held.(*Player)
+			if ok {
+				p.BeingHeld = b.key
+				fmt.Println(b.held.(*Player).BeingHeld)
+			}
+		}
 	}
 
 	// fmt.Println("flap")

@@ -2,7 +2,7 @@ package main
 
 import (
 	"sync"
-	 "fmt"
+	"fmt"
 	"encoding/json"
 	"math"
 )
@@ -122,6 +122,38 @@ func (c *EntityContainer) UpdateEntities() {
 	for _, v := range c.entities {
 		v.Update()
 	}
+}
+
+func (c *EntityContainer) isEntityHere(self EntityInterface, x, y float64) (bool, string) {
+	// c.mu.Lock()
+    // defer c.mu.Unlock()
+
+	for k, v := range c.entities {
+		if v == self {
+			continue
+		}
+
+		d := math.Sqrt(math.Pow(x - v.GetX(), 2) + math.Pow(y - v.GetY(), 2))
+
+		if d < 10 {
+			return true, k
+		}
+	}
+
+	return false, ""
+} 
+
+
+func (c *EntityContainer) nonConcurrentSafeTryPickUpEntity(ref EntityInterface, x, y float64) (bool, string) {
+	entityHere, entityKey := c.isEntityHere(ref, x, y)
+
+	if entityHere {
+		ref.SetHeld(c.entities[entityKey])
+		delete(c.entities, entityKey)
+		return true, entityKey
+	}
+
+	return false, ""
 }
 
 // run the below one for concurrent safe calling

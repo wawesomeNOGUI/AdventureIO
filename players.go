@@ -4,6 +4,7 @@ package main
 
 type Player struct {
 	EntityBase
+	BeingHeld string
 }
 
 func newPlayer(tag string, x, y float64) *Player {

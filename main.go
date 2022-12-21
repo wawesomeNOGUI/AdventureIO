@@ -94,18 +94,19 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	peerConnection.OnICEConnectionStateChange(func(connectionState webrtc.ICEConnectionState) {
 		fmt.Printf("ICE Connection State has changed: %s\n", connectionState.String())
 
-		//3 = ICEConnectionStateConnected
-		if connectionState == 3 {
+		if connectionState == webrtc.ICEConnectionStateConnected {
 			//Store a new x and y for this player
 			NumberOfPlayers++
 			playerTag = strconv.Itoa(NumberOfPlayers)
 			fmt.Println(playerTag)
 
+			tmpPlayer := newPlayer(playerTag, 50, 50)
+			tmpPlayer.room = room
 			//Store a pointer to a Player Struct in the default room
-			room.Entities.StoreEntity(playerTag, newPlayer(playerTag, 50, 50))
+			room.Entities.StoreEntity(playerTag, tmpPlayer)
 
 			fmt.Println("stored player")
-		} else if connectionState == 5 || connectionState == 6 || connectionState == 7 {
+		} else if connectionState == webrtc.ICEConnectionStateDisconnected || connectionState == webrtc.ICEConnectionStateClosed {
 			room.Entities.DeleteEntity(playerTag)
 			fmt.Println("Deleted Player")
 
@@ -142,9 +143,10 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	// Register text message handling
 	dataChannel.OnMessage(func(msg webrtc.DataChannelMessage) {
 		playerStruct := room.Entities.LoadEntity(playerTag)
-		// if playerStruct == nil {
-		// 	fmt.Println("Uh oh")
-		// }
+		if playerStruct == nil {
+		 	// fmt.Println("Uh oh")
+			return
+		}
 		tmpPlayer := playerStruct.(*Player)  // need to create a temporary copy to edit: https://stackoverflow.com/questions/17438253/accessing-struct-fields-inside-a-map-value-without-copying
 
 		if msg.Data[0] == 'X' { //88 = "X"
@@ -209,9 +211,10 @@ func echo(w http.ResponseWriter, r *http.Request) {
 		// fmt.Printf("Message from DataChannel '%s': '%s'\n", reliableChannel.Label(), string(msg.Data))
 
 		playerStruct := room.Entities.LoadEntity(playerTag)
-		// if playerStruct == nil {
-		// 	fmt.Println("Uh oh")
-		// }
+		if playerStruct == nil {
+			// fmt.Println("Uh oh")
+		   return
+	    }
 		tmpPlayer := playerStruct.(*Player)  // need to create a temporary copy to edit: https://stackoverflow.com/questions/17438253/accessing-struct-fields-inside-a-map-value-without-copying
 
 		if msg.Data[0] == 'X' { //88 = "X"
@@ -476,8 +479,8 @@ func main() {
 
 	//Our Public Candidate is declared here cause we're not using a STUN server for discovery
 	//and just hardcoding the open port, and port forwarding webrtc traffic on the router
-	// settingEngine.SetNAT1To1IPs([]string{"162.200.58.171"}, webrtc.ICECandidateTypeHost)
-	settingEngine.SetNAT1To1IPs([]string{}, webrtc.ICECandidateTypeHost)
+	settingEngine.SetNAT1To1IPs([]string{"162.200.58.171"}, webrtc.ICECandidateTypeHost)
+	// settingEngine.SetNAT1To1IPs([]string{}, webrtc.ICECandidateTypeHost)
 
 	// Configure our SettingEngine to use our UDPMux. By default a PeerConnection has
 	// no global state. The API+SettingEngine allows the user to share state between them.
