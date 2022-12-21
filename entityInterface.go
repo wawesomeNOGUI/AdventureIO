@@ -12,6 +12,8 @@ type EntityInterface interface {
 
 	Held() EntityInterface    // This method and below implemented by EntityBase
 	SetHeld(EntityInterface)
+	Owner() EntityInterface
+	SetOwner(EntityInterface)
 	Key() string
 	GetKind() string
 	GetX() float64
@@ -23,9 +25,9 @@ type EntityInterface interface {
 }
 
 // recursively traverse all entities being held by the caller entity 
-func TraverseEntities(e EntityInterface, output map[string]EntityInterface) {
+func traverseEntities(e EntityInterface, output map[string]EntityInterface) {
 	if e.Held() != nil {
-		TraverseEntities(e.Held(), output)
+		traverseEntities(e.Held(), output)
 	}
 
 	output[e.Key()] = e
@@ -82,15 +84,20 @@ func (c *EntityContainer) Players() map[string]*Player {
 	c.mu.Lock()
     defer c.mu.Unlock()
 
-	tmpMap := make(map[string]*Player)
-	for k, v := range c.entities {
+	tmpMap := make(map[string]EntityInterface)
+	for _, v := range c.entities {
+		traverseEntities(v, tmpMap)
+	}
+
+	tmpPlayerMap := make(map[string]*Player)
+	for k, v := range tmpMap {
 		switch z := v.(type) {
 		case *Player:
-			tmpMap[k] = z
+			tmpPlayerMap[k] = z
 		}
 	}
 
-	return tmpMap
+	return tmpPlayerMap
 }
 
 // Return serializtion of all entities ready for sending to clients
@@ -100,7 +107,7 @@ func (c *EntityContainer) SerializeEntities() string {
 
 	tmpMap := make(map[string]EntityInterface)
 	for _, v := range c.entities {
-		TraverseEntities(v, tmpMap)
+		traverseEntities(v, tmpMap)
 	}
 
 	jsonTemp, err := json.Marshal(tmpMap)
@@ -149,6 +156,7 @@ func (c *EntityContainer) nonConcurrentSafeTryPickUpEntity(ref EntityInterface, 
 
 	if entityHere {
 		ref.SetHeld(c.entities[entityKey])
+		c.entities[entityKey].SetOwner(ref)
 		delete(c.entities, entityKey)
 		return true, entityKey
 	}

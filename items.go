@@ -26,8 +26,17 @@ func newItem(kind string, x, y float64) (string, *Item) {
 }
 
 func (b *Item) Update() {
-	b.X += b.vX * b.s
-	b.Y += b.vY * b.s
+	if b.owner != nil {
+		b.X = b.owner.GetX()
+		b.Y = b.owner.GetY()
+	} else {
+		b.X += b.vX * b.s
+		b.Y += b.vY * b.s
+	}
+
+	if b.held != nil {
+		b.held.Update()
+	}
 
 	// WallCheck:
 
@@ -89,6 +98,7 @@ func (c *EntityContainer) nonConcurrentSafeTryPickUpItem(ref EntityInterface, x,
 
 	if itemHere {
 		ref.SetHeld(c.entities[itemKey])
+		c.entities[itemKey].SetOwner(ref)
 		delete(c.entities, itemKey)
 		return true, itemKey
 	}

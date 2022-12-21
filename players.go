@@ -18,5 +18,12 @@ func newPlayer(tag string, x, y float64) *Player {
 }
 
 func (p *Player) Update() {
-	// dummy update function to implement EntityInterface
+	if p.owner != nil {
+		p.X = p.owner.GetX()
+		p.Y = p.owner.GetY()
+	}
+
+	if p.held != nil {
+		p.held.Update()
+	}
 }

@@ -35,12 +35,16 @@ func newBat(room *Room, x, y float64) (string, *Bat) {
 const heldCounterThreshold = 100
 const waitCounterThreshold = 200
 func (b *Bat) Update() {
-	b.X += b.vX * b.s
-	b.Y += b.vY * b.s
+	if b.owner != nil {
+		b.X = b.owner.GetX()
+		b.Y = b.owner.GetY()
+	} else {
+		b.X += b.vX * b.s
+		b.Y += b.vY * b.s
+	}
 
 	if b.held != nil {
-		b.held.SetX(b.held.GetX() + b.vX * b.s)
-		b.held.SetY(b.held.GetY() + b.vY * b.s)
+		b.held.Update()
 
 		b.heldCounter++
 
@@ -67,7 +71,6 @@ func (b *Bat) Update() {
 			p, ok := b.held.(*Player)
 			if ok {
 				p.BeingHeld = ""
-				fmt.Println(p.BeingHeld)
 			}
 			b.held = nil
 			b.heldCounter = 0
@@ -93,7 +96,6 @@ func (b *Bat) Update() {
 			p, ok := b.held.(*Player)
 			if ok {
 				p.BeingHeld = b.key
-				fmt.Println(b.held.(*Player).BeingHeld)
 			}
 		}
 	}
