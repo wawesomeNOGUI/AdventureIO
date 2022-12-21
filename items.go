@@ -17,7 +17,7 @@ func newItem(kind string, x, y float64) (string, *Item) {
 	i := Item{}
 	i.X = x 
 	i.Y = y
-	i.Kind = kind
+	i.K = kind
 
 	numOfItems++
 	i.key = fmt.Sprintf(kind + "%d", numOfItems)
@@ -48,11 +48,14 @@ func (b *Item) Update() {
 	}
 }
 
-func (c *EntityContainer) isItemHere(x, y float64) (bool, string) {
+func (c *EntityContainer) isItemHere(self EntityInterface, x, y float64) (bool, string) {
 	// c.mu.Lock()
     // defer c.mu.Unlock()
 
 	for k, v := range c.entities {
+		if v == self {
+			continue
+		}
 		_, ok := v.(*Item)  // check if EntityInterface holds type Item
 		if !ok {
 			continue
@@ -76,7 +79,13 @@ func (c *EntityContainer) TryPickUpItem(ref EntityInterface, x, y float64) (bool
 	c.mu.Lock()
     defer c.mu.Unlock()
 
-	itemHere, itemKey := c.isItemHere(x, y)
+	gotItem, itemKey := c.nonConcurrentSafeTryPickUpItem(ref, x, y)
+
+	return gotItem, itemKey
+}
+
+func (c *EntityContainer) nonConcurrentSafeTryPickUpItem(ref EntityInterface, x, y float64) (bool, string) {
+	itemHere, itemKey := c.isItemHere(ref, x, y)
 
 	if itemHere {
 		ref.SetHeld(c.entities[itemKey])
@@ -86,3 +95,4 @@ func (c *EntityContainer) TryPickUpItem(ref EntityInterface, x, y float64) (bool
 
 	return false, ""
 }
+

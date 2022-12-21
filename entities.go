@@ -35,8 +35,8 @@ func newBat(room *Room, x, y float64) (string, *Bat) {
 const heldCounterThreshold = 100
 const waitCounterThreshold = 200
 func (b *Bat) Update() {
-	b.X += math.Round(b.vX * b.s)
-	b.Y += math.Round(b.vY * b.s)
+	b.X += b.vX * b.s
+	b.Y += b.vY * b.s
 
 	if b.held != nil {
 		b.held.SetX(b.held.GetX() + b.vX * b.s)
@@ -62,7 +62,8 @@ func (b *Bat) Update() {
 			b.held.SetX(b.held.GetX() + b.vX * 5)
 			b.held.SetY(b.held.GetY() + b.vY * 5)
 
-			b.room.Entities.StoreEntity(b.held.Key(), b.held)
+			// non concurrent safe store here is ok cause UpdateEntities() locks mutex
+			b.room.Entities.entities[b.held.Key()] = b.held
 			b.held = nil
 			b.heldCounter = 0
 			b.waitCounter = waitCounterThreshold
@@ -80,8 +81,10 @@ func (b *Bat) Update() {
 		// fmt.Println(b.vX)
 
 		// Try to pick up an item
-		//b.room.Entities.TryPickUpItem(b, b.X+2, b.Y+2)
+		b.room.Entities.nonConcurrentSafeTryPickUpItem(b, b.X+2, b.Y+2)
 	}
+
+	// fmt.Println("flap")
 
 	WallCheck:
 

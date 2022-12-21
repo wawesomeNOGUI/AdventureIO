@@ -48,6 +48,12 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	var playerTag string
 	var room *Room
 
+	// start player in default room
+	v, ok := Rooms.Load("r1")
+	if !ok {
+		fmt.Println("Couldn't find room")
+	}
+	room = v.(*Room)
 	//===========WEBRTC====================================
 	// Create a new RTCPeerConnection
 	peerConnection, err := api.NewPeerConnection(webrtc.Configuration{})
@@ -95,14 +101,10 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			playerTag = strconv.Itoa(NumberOfPlayers)
 			fmt.Println(playerTag)
 
-			//Store a pointer to a Player Struct
-			v, ok := Rooms.Load("r1")
-			if !ok {
-				fmt.Println("Couldn't find room")
-			}
-			v.(*Room).Entities.StoreEntity(playerTag, newPlayer(playerTag, 50, 50))
-			room = v.(*Room)
+			//Store a pointer to a Player Struct in the default room
+			room.Entities.StoreEntity(playerTag, newPlayer(playerTag, 50, 50))
 
+			fmt.Println("stored player")
 		} else if connectionState == 5 || connectionState == 6 || connectionState == 7 {
 			room.Entities.DeleteEntity(playerTag)
 			fmt.Println("Deleted Player")
@@ -418,6 +420,8 @@ var Rooms sync.Map
 func initGameVars() {
 	InitializeRooms(&Rooms)
 	InitializeEntities(&Rooms)
+
+	fmt.Println("Game Ready. \n\n\n")
 }
 
 // All server orchestrated game logic
@@ -472,7 +476,8 @@ func main() {
 
 	//Our Public Candidate is declared here cause we're not using a STUN server for discovery
 	//and just hardcoding the open port, and port forwarding webrtc traffic on the router
-	settingEngine.SetNAT1To1IPs([]string{"162.200.58.171"}, webrtc.ICECandidateTypeHost)
+	// settingEngine.SetNAT1To1IPs([]string{"162.200.58.171"}, webrtc.ICECandidateTypeHost)
+	settingEngine.SetNAT1To1IPs([]string{}, webrtc.ICECandidateTypeHost)
 
 	// Configure our SettingEngine to use our UDPMux. By default a PeerConnection has
 	// no global state. The API+SettingEngine allows the user to share state between them.
