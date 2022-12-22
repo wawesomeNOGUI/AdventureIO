@@ -10,6 +10,7 @@ type EntityBase struct {
 	vY float64
 	K string // what kind of entity
 	held EntityInterface // should be a pointer reference to an entity, this entity will only be accessed through parent entity
+	owner EntityInterface // for this entity to use the x, y data from parent entity's Update
 	room *Room
 }
 
@@ -19,6 +20,14 @@ func (e *EntityBase) Held() EntityInterface {
 
 func (e *EntityBase) SetHeld(p EntityInterface) {
 	e.held = p
+}
+
+func (e *EntityBase) Owner() EntityInterface {
+	return e.owner
+}
+
+func (e *EntityBase) SetOwner(p EntityInterface) {
+	e.owner = p
 }
 
 func (e *EntityBase) Key() string {
@@ -43,6 +52,30 @@ func (e *EntityBase) GetY() float64 {
 
 func (e *EntityBase) SetY(y float64) {
 	e.Y = y
+}
+
+func (e *EntityBase) GetvX() float64 {
+	return e.vX
+}
+
+func (e *EntityBase) SetvX(vX float64) {
+	e.vX = vX
+}
+
+func (e *EntityBase) GetvY() float64 {
+	return e.vY
+}
+
+func (e *EntityBase) SetvY(vY float64) {
+	e.vY = vY
+}
+
+func (e *EntityBase) GetS() float64 {
+	return e.s
+}
+
+func (e *EntityBase) SetS(s float64) {
+	e.s = s
 }
 
 func (e *EntityBase) GetRoom() *Room {

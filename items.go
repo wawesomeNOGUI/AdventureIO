@@ -25,17 +25,25 @@ func newItem(kind string, x, y float64) (string, *Item) {
 	return i.key, &i
 }
 
-func (b *Item) Update() {
+func (b *Item) Update(oX, oY float64) {
 	if b.owner != nil {
-		b.X = b.owner.GetX()
-		b.Y = b.owner.GetY()
-	} else {
-		b.X += b.vX * b.s
-		b.Y += b.vY * b.s
+		b.X += oX
+		b.Y += oY
+
+		if b.held != nil {
+			b.held.Update(oX, oY)
+		}
+
+		return
 	}
 
+	prevX := b.X
+	prevY := b.Y
+	b.X += b.vX * b.s
+	b.Y += b.vY * b.s
+
 	if b.held != nil {
-		b.held.Update()
+		b.held.Update(b.X-prevX, b.Y-prevY)
 	}
 
 	// WallCheck:

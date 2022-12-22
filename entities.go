@@ -34,17 +34,25 @@ func newBat(room *Room, x, y float64) (string, *Bat) {
 
 const heldCounterThreshold = 100
 const waitCounterThreshold = 200
-func (b *Bat) Update() {
+func (b *Bat) Update(oX, oY float64) {
 	if b.owner != nil {
-		b.X = b.owner.GetX()
-		b.Y = b.owner.GetY()
-	} else {
-		b.X += b.vX * b.s
-		b.Y += b.vY * b.s
+		b.X += oX
+		b.Y += oY
+
+		if b.held != nil {
+			b.held.Update(oX, oY)
+		}
+
+		return
 	}
 
+	prevX := b.X
+	prevY := b.Y
+	b.X += b.vX * b.s
+	b.Y += b.vY * b.s
+
 	if b.held != nil {
-		b.held.Update()
+		b.held.Update(b.X-prevX, b.Y-prevY)
 
 		b.heldCounter++
 
@@ -63,11 +71,13 @@ func (b *Bat) Update() {
 				b.vY = -b.vY
 			}
 			
-			b.held.SetX(b.held.GetX() + b.vX * 5)
-			b.held.SetY(b.held.GetY() + b.vY * 5)
+			b.held.Update(b.vX * 5, b.vY * 5)
+			//b.held.SetX(b.held.GetX() + b.vX * 5)
+			//b.held.SetY(b.held.GetY() + b.vY * 5)
 
 			// non concurrent safe store here is ok cause UpdateEntities() locks mutex
 			b.room.Entities.entities[b.held.Key()] = b.held
+			b.held.SetOwner(nil)
 			p, ok := b.held.(*Player)
 			if ok {
 				p.BeingHeld = ""

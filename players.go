@@ -17,13 +17,19 @@ func newPlayer(tag string, x, y float64) *Player {
 	return &p
 }
 
-func (p *Player) Update() {
+func (p *Player) Update(oX, oY float64) {
 	if p.owner != nil {
-		p.X = p.owner.GetX()
-		p.Y = p.owner.GetY()
+		p.X += oX
+		p.Y += oY
+
+		if p.held != nil {
+			p.held.Update(oX, oY)
+		}
+
+		return
 	}
 
 	if p.held != nil {
-		p.held.Update()
+	//	p.held.Update(p.xDif, p.yDif)
 	}
 }

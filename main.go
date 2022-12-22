@@ -163,9 +163,9 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			}	
 
 			// Move Owned Item (tmpPlayer.held is an EntitiyInterface)
-			// if tmpPlayer.held != nil {
-			// 	tmpPlayer.held.SetX(tmpPlayer.held.GetX() + x - tmpPlayer.X)
-			// }
+			if tmpPlayer.held != nil {
+				tmpPlayer.held.SetX(tmpPlayer.held.GetX() + x - tmpPlayer.X)
+			}
 			
 			tmpPlayer.X = x
 		} else if msg.Data[0] == 'Y' { //89 = "Y"
@@ -181,9 +181,9 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// Move Owned Item (tmpPlayer.held is an EntitiyInterface)
-			// if tmpPlayer.held != nil {
-			// 	tmpPlayer.held.SetY(tmpPlayer.held.GetY() + y - tmpPlayer.Y)
-			// }
+			if tmpPlayer.held != nil {
+				tmpPlayer.held.SetY(tmpPlayer.held.GetY() + y - tmpPlayer.Y)
+			}
 
 			tmpPlayer.Y = y
 		}
@@ -231,9 +231,9 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			}	
 
 			// Move Owned Item (tmpPlayer.held is an EntitiyInterface)
-			// if tmpPlayer.held != nil {
-			// 	tmpPlayer.held.SetX(tmpPlayer.held.GetX() + x - tmpPlayer.X)
-			// }
+			if tmpPlayer.held != nil {
+				tmpPlayer.held.SetX(tmpPlayer.held.GetX() + x - tmpPlayer.X)
+			}
 			
 			tmpPlayer.X = x
 		} else if msg.Data[0] == 'Y' { //89 = "Y"
@@ -249,16 +249,16 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// Move Owned Item (tmpPlayer.held is an EntitiyInterface)
-			// if tmpPlayer.held != nil {
-			// 	tmpPlayer.held.SetY(tmpPlayer.held.GetY() + y - tmpPlayer.Y)
-			// }
+			if tmpPlayer.held != nil {
+				tmpPlayer.held.SetY(tmpPlayer.held.GetY() + y - tmpPlayer.Y)
+			}
 
 			tmpPlayer.Y = y
 		} else if msg.Data[0] == 'D' {
 			//dropped item
 			if tmpPlayer.held != nil {
 				room.Entities.StoreEntity(tmpPlayer.held.Key(), tmpPlayer.held)
-				
+			    tmpPlayer.held.SetOwner(nil)
 				tmpPlayer.held = nil
 			}
 		} else if msg.Data[0] == 'P' && tmpPlayer.held == nil {

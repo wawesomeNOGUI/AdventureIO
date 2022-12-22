@@ -8,7 +8,7 @@ import (
 )
 
 type EntityInterface interface {
-	Update()
+	Update(float64, float64)
 
 	Held() EntityInterface    // This method and below implemented by EntityBase
 	SetHeld(EntityInterface)
@@ -20,6 +20,12 @@ type EntityInterface interface {
 	SetX(float64)
 	GetY() float64
 	SetY(float64)
+	GetvX() float64
+	SetvX(float64)
+	GetvY() float64
+	SetvY(float64)
+	GetS() float64
+	SetS(float64)
 	GetRoom() *Room 
 	SetRoom(*Room)
 }
@@ -127,7 +133,7 @@ func (c *EntityContainer) UpdateEntities() {
     defer c.mu.Unlock()
 
 	for _, v := range c.entities {
-		v.Update()
+		v.Update(0, 0)
 	}
 }
 
