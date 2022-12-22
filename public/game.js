@@ -128,10 +128,8 @@ var render = function () {
   t += interpolateInc;
 
   for (var key in Updates) {     //Updates defined in index.html  
-    console.log(Updates[key].BeingHeld)
     if (Number(key)) {  // then its a player
       if (key != playerTag && previousUpdate.hasOwnProperty(key))  {
-        if (key == playerTag) {console.log("yes")}
         var x = smoothstep(previousUpdate[key].X, Updates[key].X, t);
         var y = smoothstep(previousUpdate[key].Y, Updates[key].Y, t);
 
@@ -139,6 +137,12 @@ var render = function () {
         ctx.fillStyle = "#ecb0e0";
         ctx.fillRect(Math.round(x), Math.round(y), 4, 4);
       } else {
+        if (Updates[playerTag].BeingHeld != "") {
+          var x = smoothstep(previousUpdate[key].X, Updates[key].X, t);
+          var y = smoothstep(previousUpdate[key].Y, Updates[key].Y, t);
+          pX = Math.round(x);
+          pY = Math.round(y);
+        }
         //Local Player
         ctx.fillStyle = pColor;
         ctx.fillRect(pX, pY, 4, 4);
@@ -154,11 +158,6 @@ var render = function () {
 
         ctx.drawImage(spriteMap[Updates[key].K], Math.round(x), Math.round(y));
         // ctx.drawImage(spriteMap[Updates[key].Kind], Updates[key].X, Updates[key].Y);
-
-        if (Updates[playerTag].BeingHeld == key) {
-          pX = Math.round(x);
-          pY = Math.round(y);
-        }
       }
     }
   }
