@@ -54,6 +54,9 @@ func echo(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Couldn't find room")
 	}
 	room = v.(*Room)
+
+	defer room.Entities.DeleteEntity(playerTag) 
+
 	//===========WEBRTC====================================
 	// Create a new RTCPeerConnection
 	peerConnection, err := api.NewPeerConnection(webrtc.Configuration{})
