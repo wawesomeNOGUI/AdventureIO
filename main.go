@@ -164,7 +164,11 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 			// Move Owned Item (tmpPlayer.held is an EntitiyInterface)
 			if tmpPlayer.held != nil {
-				tmpPlayer.held.SetX(tmpPlayer.held.GetX() + x - tmpPlayer.X)
+				// tmpPlayer.held.SetX(tmpPlayer.held.GetX() + x - tmpPlayer.X)
+				// *******
+				//might be a race condition if use other functions that need to iterate through items??
+				// *******
+				tmpPlayer.held.Update(x - tmpPlayer.X, 0)
 			}
 			
 			tmpPlayer.X = x
@@ -182,7 +186,8 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 			// Move Owned Item (tmpPlayer.held is an EntitiyInterface)
 			if tmpPlayer.held != nil {
-				tmpPlayer.held.SetY(tmpPlayer.held.GetY() + y - tmpPlayer.Y)
+				// tmpPlayer.held.SetY(tmpPlayer.held.GetY() + y - tmpPlayer.Y)
+				tmpPlayer.held.Update(0, y - tmpPlayer.Y)
 			}
 
 			tmpPlayer.Y = y
@@ -232,7 +237,8 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 			// Move Owned Item (tmpPlayer.held is an EntitiyInterface)
 			if tmpPlayer.held != nil {
-				tmpPlayer.held.SetX(tmpPlayer.held.GetX() + x - tmpPlayer.X)
+				// tmpPlayer.held.SetX(tmpPlayer.held.GetX() + x - tmpPlayer.X)
+				tmpPlayer.held.Update(x - tmpPlayer.X, 0)
 			}
 			
 			tmpPlayer.X = x
@@ -250,7 +256,8 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 			// Move Owned Item (tmpPlayer.held is an EntitiyInterface)
 			if tmpPlayer.held != nil {
-				tmpPlayer.held.SetY(tmpPlayer.held.GetY() + y - tmpPlayer.Y)
+				// tmpPlayer.held.SetY(tmpPlayer.held.GetY() + y - tmpPlayer.Y)
+				tmpPlayer.held.Update(0, y - tmpPlayer.Y)
 			}
 
 			tmpPlayer.Y = y
