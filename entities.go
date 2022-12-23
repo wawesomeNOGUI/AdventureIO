@@ -71,7 +71,7 @@ func (b *Bat) Update(oX, oY float64) {
 				b.vY = -b.vY
 			}
 			
-			b.held.Update(b.vX * 5, b.vY * 5)
+			// b.held.Update(b.vX * 5, b.vY * 5)
 			//b.held.SetX(b.held.GetX() + b.vX * 5)
 			//b.held.SetY(b.held.GetY() + b.vY * 5)
 
@@ -114,19 +114,19 @@ func (b *Bat) Update(oX, oY float64) {
 
 	WallCheck:
 
-	if b.X < 2 {
-		b.X = 2
+	if b.X < b.room.leftX {
+		b.X = b.room.leftX
 		b.vX = -b.vX
-	} else if b.X > 154 {
-		b.X = 154
+	} else if b.X > b.room.rightX {
+		b.X = b.room.rightX
 		b.vX = -b.vX
 	}	
 	
-	if b.Y < 2 {
-		b.Y = 2
+	if b.Y < b.room.upperY {
+		b.Y = b.room.upperY
 		b.vY = -b.vY
-	} else if b.Y > 99 {
-		b.Y = 99
+	} else if b.Y > b.room.lowerY {
+		b.Y = b.room.lowerY
 		b.vY = -b.vY
 	}
 }
