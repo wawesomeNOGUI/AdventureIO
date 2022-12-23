@@ -15,6 +15,9 @@ ctx.imageSmoothingEnabled = false;
 document.body.scrollTop = 0; // <-- pull the page to the top
 document.body.style.overflow = 'hidden'; // <-- To hide scrollbar
 
+var img = new Image();
+    img.src = "../public/sprites/rooms/r1.gif";
+
 function createArray(length) {
     var arr = new Array(length || 0),
         i = length;
@@ -69,6 +72,8 @@ function getLayoutGO() {
 function render(x, y) {
     ctx.clearRect(0, 0, can.width, can.height);
 
+    ctx.drawImage(img, 0, 0);
+
     ctx.fillStyle = "#99999950";
     ctx.fillRect(x, y, drawWidth, drawWidth);
 
@@ -88,26 +93,26 @@ can.addEventListener("mousedown", function(e){
     var sY = Math.floor(e.y * (105/window.innerHeight));
 
     if (e.button == 0) {
-        for (var x = sX; x < drawWidth + sX; x++) {
-            for (var y = sY; y < drawWidth + sY; y++) {
+        for (var x = sX; x <= drawWidth + sX-1; x++) {
+            for (var y = sY; y <= drawWidth + sY-1; y++) {
                 if (x >= 160 || y >= 105) {
                     continue;
                 }
                 roomLayout[x][y] = true;
             }
         }
-
+        rightmousedown = false;
         mousedown = true;
     } else if (e.button == 2) {
-        for (var x = sX; x < drawWidth + sX; x++) {
-            for (var y = sY; y < drawWidth + sY; y++) {
+        for (var x = sX; x < drawWidth + sX-1; x++) {
+            for (var y = sY; y < drawWidth + sY-1; y++) {
                 if (x >= 160 || y >= 105) {
                     continue;
                 }
                 roomLayout[x][y] = false;
             }
         }
-
+        mousedown = false;
         rightmousedown = true;
     }
     
@@ -127,8 +132,8 @@ can.addEventListener("mousemove", function(e){
     var sY = Math.floor(e.y * (105/window.innerHeight));
 
     if (mousedown) {
-        for (var x = sX; x < drawWidth + sX; x++) {
-            for (var y = sY; y < drawWidth + sY; y++) {
+        for (var x = sX; x < drawWidth + sX-1; x++) {
+            for (var y = sY; y < drawWidth + sY-1; y++) {
                 if (x >= 160 || y >= 105) {
                     continue;
                 }
@@ -136,8 +141,8 @@ can.addEventListener("mousemove", function(e){
             }
         }
     } else if (rightmousedown) {
-        for (var x = sX; x < drawWidth + sX; x++) {
-            for (var y = sY; y < drawWidth + sY; y++) {
+        for (var x = sX; x < drawWidth + sX-1; x++) {
+            for (var y = sY; y < drawWidth + sY-1; y++) {
                 if (x >= 160 || y >= 105) {
                     continue;
                 }
