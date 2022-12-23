@@ -13,16 +13,24 @@ type Item struct {
 }
 
 var numOfItems int
-func newItem(kind string, x, y float64) (string, *Item) {
+func newItem(kind string, r *Room, x, y, w, h float64) (string, *Item) {
 	i := Item{}
 	i.X = x 
 	i.Y = y
+	i.width = w
+	i.height = h
 	i.K = kind
+	i.room = r
 
 	numOfItems++
 	i.key = fmt.Sprintf(kind + "%d", numOfItems)
 
 	return i.key, &i
+}
+
+func newSword(r *Room, x, y float64) (string, *Item) {
+	return newItem("sword", r, x, y, 10, 5)
+
 }
 
 func (b *Item) Update(oX, oY float64) {
@@ -47,22 +55,7 @@ func (b *Item) Update(oX, oY float64) {
 	}
 
 	// WallCheck:
-
-	if b.X < 2 {
-		b.X = 2
-		b.vX = -b.vX
-	} else if b.X > 154 {
-		b.X = 154
-		b.vX = -b.vX
-	}	
-	
-	if b.Y < 2 {
-		b.Y = 2
-		b.vY = -b.vY
-	} else if b.Y > 99 {
-		b.Y = 99
-		b.vY = -b.vY
-	}
+	WallCheck(b)
 }
 
 func (c *EntityContainer) isItemHere(self EntityInterface, x, y float64) (bool, string) {

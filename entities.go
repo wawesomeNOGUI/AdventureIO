@@ -20,6 +20,8 @@ func newBat(room *Room, x, y float64) (string, *Bat) {
 	b := Bat{}
 	b.X = x 
 	b.Y = y
+	b.width = 8
+	b.height = 11
 	b.vX = 0.5
 	b.vY = 0.5
 	b.s = 1
@@ -113,22 +115,7 @@ func (b *Bat) Update(oX, oY float64) {
 	// fmt.Println("flap")
 
 	WallCheck:
-
-	if b.X < b.room.leftX {
-		b.X = b.room.leftX
-		b.vX = -b.vX
-	} else if b.X > b.room.rightX {
-		b.X = b.room.rightX
-		b.vX = -b.vX
-	}	
-	
-	if b.Y < b.room.upperY {
-		b.Y = b.room.upperY
-		b.vY = -b.vY
-	} else if b.Y > b.room.lowerY {
-		b.Y = b.room.lowerY
-		b.vY = -b.vY
-	}
+	WallCheck(b)
 }
 //==================Dragons====================
 /*

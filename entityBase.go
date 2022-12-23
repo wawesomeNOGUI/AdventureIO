@@ -5,6 +5,8 @@ type EntityBase struct {
 	key string	// this entity's unique key for inserting into map
 	X float64
 	Y float64
+	width float64
+	height float64
 	s float64	// speed, how much can move each update (not exported)
 	vX float64  // current direction vectors (normalized = hypotenuse of 1) 
 	vY float64
@@ -52,6 +54,22 @@ func (e *EntityBase) GetY() float64 {
 
 func (e *EntityBase) SetY(y float64) {
 	e.Y = y
+}
+
+func (e *EntityBase) GetWidth() float64 {
+	return e.width
+}
+
+func (e *EntityBase) SetWidth(w float64) {
+	e.width = w
+}
+
+func (e *EntityBase) GetHeight() float64 {
+	return e.width
+}
+
+func (e *EntityBase) SetHeight(h float64) {
+	e.height = h
 }
 
 func (e *EntityBase) GetvX() float64 {
