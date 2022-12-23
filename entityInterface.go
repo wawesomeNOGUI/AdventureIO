@@ -20,6 +20,10 @@ type EntityInterface interface {
 	SetX(float64)
 	GetY() float64
 	SetY(float64)
+	GetWidth() float64
+	SetWidth(float64)
+	GetHeight() float64
+	SetHeight(float64)
 	GetvX() float64
 	SetvX(float64)
 	GetvY() float64
@@ -37,6 +41,84 @@ func traverseEntities(e EntityInterface, output map[string]EntityInterface) {
 	}
 
 	output[e.Key()] = e
+}
+
+func WallCheck(e EntityInterface) {
+	// Pixel perfect wall hit check
+	for x := e.GetX() + 1; x < e.GetX() + e.GetWidth() - 1; x++ {  // check for top hit
+			// make sure x in range
+			if x < 0 || x >= 160 {
+				continue
+			} 
+			// test for hit 
+			if !e.GetRoom().layout[int(x)][int(e.GetY())] {
+				continue
+			}
+
+			e.SetY(e.GetY()+1)
+			e.SetvY(-e.GetvY())
+			break
+	}
+
+	for x := e.GetX() + 1; x < e.GetX() + e.GetWidth() - 1; x++ {  // check for bottom hit
+		// make sure x in range
+		if x < 0 || x >= 160 {
+			continue
+		} 
+		// test for hit 
+		if !e.GetRoom().layout[int(x)][int(e.GetY() + e.GetHeight())] {
+			continue
+		}
+
+		e.SetY(e.GetY()-1)
+		e.SetvY(-e.GetvY())
+		break
+	}
+
+	for y := e.GetY() + 1; y < e.GetY() + e.GetHeight() - 1; y++ {  // check for left hit
+		// make sure y in range
+		if y < 0 || y >= 105 {
+			continue
+		} 
+		// test for hit 
+		if !e.GetRoom().layout[int(e.GetX())][int(y)] {
+			continue
+		}
+
+		e.SetX(e.GetX()+1)
+		e.SetvX(-e.GetvX())
+		break
+	}
+
+	for y := e.GetY() + 1; y < e.GetY() + e.GetHeight() - 1; y++ {  // check for right hit
+		// make sure y in range
+		if y < 0 || y >= 105 {
+			continue
+		} 
+		// test for hit 
+		if !e.GetRoom().layout[int(e.GetX() + e.GetWidth())][int(y)] {
+			continue
+		}
+
+		e.SetX(e.GetX()-1)
+		e.SetvX(-e.GetvX())
+		break
+	}	
+
+	goto Exit
+
+	Exit:
+	if e.GetX() < 0 {
+		e.SetX(0)
+	} else if e.GetX() + e.GetWidth() > 160 {
+		e.SetX(160 - e.GetWidth())
+	}	
+	
+	if e.GetY() < 0 {
+		e.SetY(0)
+	} else if e.GetY() + e.GetHeight() > 105 {
+		e.SetY(105 - e.GetHeight())
+	}
 }
 
 // https://tip.golang.org/doc/go1.8#mapiter
