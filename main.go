@@ -57,6 +57,9 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 	defer room.Entities.DeleteEntity(playerTag) 
 
+	// lets UDP chan onOpen and reliable chan onOpen know that the player has been fully setup in the OnICEConnectionStateChange
+	playerReady := make(chan bool)  
+
 	//===========WEBRTC====================================
 	// Create a new RTCPeerConnection
 	peerConnection, err := api.NewPeerConnection(webrtc.Configuration{})
@@ -108,6 +111,10 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			//Store a pointer to a Player Struct in the default room
 			room.Entities.StoreEntity(playerTag, tmpPlayer)
 
+			// send two playerreadies, one for each datachannel we're opening
+			playerReady <- true
+			playerReady <- true
+
 			fmt.Println("stored player")
 		} else if connectionState == webrtc.ICEConnectionStateDisconnected || connectionState == webrtc.ICEConnectionStateClosed {
 			room.Entities.DeleteEntity(playerTag)
@@ -126,6 +133,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	//====================No retransmits, ordered dataChannel=======================
 	// Register channel opening handling
 	dataChannel.OnOpen(func() {
+		<-playerReady
 		unreliableChans.AddPlayerChan(playerTag, dataChannel)
 		/*
 		for {
@@ -204,6 +212,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	//=========================Reliable DataChannel=================================
 	// Register channel opening handling
 	reliableChannel.OnOpen(func() {
+		<-playerReady
 		reliableChans.AddPlayerChan(playerTag, reliableChannel)
 
 		//Send Client their playerTag so they know who they are in the Updates Array
