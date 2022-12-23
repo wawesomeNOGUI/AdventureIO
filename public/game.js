@@ -68,9 +68,9 @@ var spriteAnimationInterval = setInterval(function(){
 
 //======================Rooms===============================
 var r1 = new Image();
-    r1.src = "";
+    r1.src = "sprites/rooms/r1.gif";
 
-var roomMap = {
+var roomSprites = {
   "r1": r1
 }
 //==========================================================
@@ -130,8 +130,12 @@ var render = function () {
     return;
   }
 
+  // Draw default background color
   ctx.fillStyle = "#b0b0b0";
   ctx.fillRect(0, 0, width, height);
+
+  //Draw room picture (room defined in index.html)
+  ctx.drawImage(roomSprites[room], 0, 0)
 
    //Draw Players And Items
   t += interpolateInc;
