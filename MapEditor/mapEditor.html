@@ -1,0 +1,179 @@
+<html>
+<body style = "margin: 0; padding: 0">
+<canvas id="canvas" style="image-rendering: pixelated;
+image-rendering: crisp-edges;"></canvas>
+<script>
+const can = document.getElementById("canvas");
+const ctx = can.getContext("2d");
+can.width = 160;
+can.height = 105;
+can.style.width = ""+ window.innerWidth +"px";
+can.style.height = ""+ window.innerHeight +"px";
+
+ctx.imageSmoothingEnabled = false;
+
+document.body.scrollTop = 0; // <-- pull the page to the top
+document.body.style.overflow = 'hidden'; // <-- To hide scrollbar
+
+function createArray(length) {
+    var arr = new Array(length || 0),
+        i = length;
+
+    if (arguments.length > 1) {
+        var args = Array.prototype.slice.call(arguments, 1);
+        while(i--) arr[length-1 - i] = createArray.apply(this, args);
+    }
+
+    return arr;
+}
+
+var roomLayout = createArray(160, 105);
+for (var x = 0; x < 160; x++) {
+        for (var y = 0; y < 105; y++) {
+            roomLayout[x][y] = false;
+        }
+    } 
+
+var drawWidth = 1;
+
+function getLayoutJS() {
+    var roomString = "[";
+    for (var x = 0; x < 160; x++) {
+        roomString += "[";
+        for (var y = 0; y < 105; y++) {
+            roomString += roomLayout[x][y] + ","
+        }
+        roomString = roomString.slice(0, -1); // delete last comma
+        roomString += "],";
+    }
+    roomString = roomString.slice(0, -1); // delete last comma
+    roomString += "]";
+    document.write(roomString);
+}
+
+function getLayoutGO() {
+    var roomString = "{";
+    for (var x = 0; x < 160; x++) {
+        roomString += "{";
+        for (var y = 0; y < 105; y++) {
+            roomString += roomLayout[x][y] + ","
+        }
+        roomString = roomString.slice(0, -1); // delete last comma
+        roomString += "},";
+    }
+    roomString = roomString.slice(0, -1); // delete last comma
+    roomString += "}";
+    document.write(roomString);
+}
+
+function render(x, y) {
+    ctx.clearRect(0, 0, can.width, can.height);
+
+    ctx.fillStyle = "#99999950";
+    ctx.fillRect(x, y, drawWidth, drawWidth);
+
+    for (var x = 0; x < 160; x++) {
+        for (var y = 0; y < 105; y++) {
+            if (roomLayout[x][y]) {
+                ctx.fillStyle = "black";
+                ctx.fillRect(x, y, 1, 1);
+            }
+        }
+    } 
+}
+var mousedown = false;
+var rightmousedown = false;
+can.addEventListener("mousedown", function(e){
+    var sX = Math.floor(e.x * (160/window.innerWidth));
+    var sY = Math.floor(e.y * (105/window.innerHeight));
+
+    if (e.button == 0) {
+        for (var x = sX; x < drawWidth + sX; x++) {
+            for (var y = sY; y < drawWidth + sY; y++) {
+                if (x >= 160 || y >= 105) {
+                    continue;
+                }
+                roomLayout[x][y] = true;
+            }
+        }
+
+        mousedown = true;
+    } else if (e.button == 2) {
+        for (var x = sX; x < drawWidth + sX; x++) {
+            for (var y = sY; y < drawWidth + sY; y++) {
+                if (x >= 160 || y >= 105) {
+                    continue;
+                }
+                roomLayout[x][y] = false;
+            }
+        }
+
+        rightmousedown = true;
+    }
+    
+    render(-100, -100);
+})
+
+can.addEventListener("mouseup", function(e){
+    if (e.button == 0) {
+        mousedown = false;
+    } else if (e.button == 2) {
+        rightmousedown = false;
+    }
+})
+
+can.addEventListener("mousemove", function(e){
+    var sX = Math.floor(e.x * (160/window.innerWidth));
+    var sY = Math.floor(e.y * (105/window.innerHeight));
+
+    if (mousedown) {
+        for (var x = sX; x < drawWidth + sX; x++) {
+            for (var y = sY; y < drawWidth + sY; y++) {
+                if (x >= 160 || y >= 105) {
+                    continue;
+                }
+                roomLayout[x][y] = true;
+            }
+        }
+    } else if (rightmousedown) {
+        for (var x = sX; x < drawWidth + sX; x++) {
+            for (var y = sY; y < drawWidth + sY; y++) {
+                if (x >= 160 || y >= 105) {
+                    continue;
+                }
+                roomLayout[x][y] = false;
+            }
+        }
+    }
+
+    render(sX, sY);
+})
+
+window.addEventListener("wheel", function(e){
+    drawWidth += e.deltaY / 2;
+    if (drawWidth < 1) {
+        drawWidth = 1;
+    } else if (drawWidth > 25) {
+        drawWidth = 25;
+    }
+
+    var sX = Math.floor(e.x * (160/window.innerWidth));
+    var sY = Math.floor(e.y * (105/window.innerHeight));
+
+    render(sX, sY);
+})
+
+window.addEventListener("resize", function(){
+ // canvas.style.width = ""+ window.innerWidth - 40 +"px";
+ // canvas.style.height = ""+ window.innerHeight - 40 +"px";
+ can.style.width = ""+ window.innerWidth +"px";
+ can.style.height = ""+ window.innerHeight +"px";
+});
+
+window.addEventListener("contextmenu", function(e){
+  e.preventDefault();   //stops right click bringing up a menu
+});
+
+</script>
+</body>
+</html>
