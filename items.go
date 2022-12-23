@@ -21,6 +21,7 @@ func newItem(kind string, r *Room, x, y, w, h float64) (string, *Item) {
 	i.height = h
 	i.K = kind
 	i.room = r
+	i.canChangeRooms = true
 
 	numOfItems++
 	i.key = fmt.Sprintf(kind + "%d", numOfItems)

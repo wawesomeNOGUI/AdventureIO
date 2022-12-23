@@ -32,6 +32,8 @@ type EntityInterface interface {
 	SetS(float64)
 	GetRoom() *Room 
 	SetRoom(*Room)
+	CanChangeRooms() bool
+	SetCanChangeRooms(bool)
 }
 
 // recursively traverse all entities being held by the caller entity 
@@ -45,17 +47,57 @@ func traverseEntities(e EntityInterface, output map[string]EntityInterface) {
 
 func WallCheck(e EntityInterface) {
 	if e.GetX() < 0 {
-		e.SetX(0)
+		if e.GetRoom().leftRoom != nil && e.CanChangeRooms() {
+			e.SetRoom(e.GetRoom().leftRoom)
+			e.SetX(160 - e.GetWidth())
+
+			p, ok := e.(*Player)
+			if ok {
+				reliableChans.SendToPlayer(p.key, p.room.roomKey)
+			}
+		} else {
+			e.SetX(0)
+		}
 	} else if e.GetX() + e.GetWidth() > 160 {
-		e.SetX(160 - e.GetWidth())
+		if e.GetRoom().rightRoom != nil && e.CanChangeRooms() {
+			e.SetRoom(e.GetRoom().rightRoom)
+			e.SetX(0)
+
+			p, ok := e.(*Player)
+			if ok {
+				reliableChans.SendToPlayer(p.key, p.room.roomKey)
+			}
+		} else {
+			e.SetX(160 - e.GetWidth())
+		}
 	}	
 	
 	if e.GetY() < 0 {
-		e.SetY(0)
+		if e.GetRoom().aboveRoom != nil && e.CanChangeRooms() {
+			e.SetRoom(e.GetRoom().aboveRoom)
+			e.SetY(105 - e.GetHeight())
+
+			p, ok := e.(*Player)
+			if ok {
+				reliableChans.SendToPlayer(p.key, p.room.roomKey)
+			}
+		} else {
+			e.SetY(0)
+		}
 	} else if e.GetY() + e.GetHeight() > 105 {
-		e.SetY(105 - e.GetHeight())
+		if e.GetRoom().belowRoom != nil && e.CanChangeRooms() {
+			e.SetRoom(e.GetRoom().belowRoom)
+			e.SetY(0)
+
+			p, ok := e.(*Player)
+			if ok {
+				reliableChans.SendToPlayer(p.key, p.room.roomKey)
+			}
+		} else {
+			e.SetY(105 - e.GetHeight())
+		}
 	}
-	
+
 	// Pixel perfect wall hit check
 	for x := e.GetX() + 1; x < e.GetX() + e.GetWidth() - 1; x++ {  // check for top hit
 			// make sure x in range

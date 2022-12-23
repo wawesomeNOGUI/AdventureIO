@@ -14,6 +14,7 @@ type EntityBase struct {
 	held EntityInterface // should be a pointer reference to an entity, this entity will only be accessed through parent entity
 	owner EntityInterface // for this entity to use the x, y data from parent entity's Update
 	room *Room
+	canChangeRooms bool
 }
 
 func (e *EntityBase) Held() EntityInterface {
@@ -102,5 +103,13 @@ func (e *EntityBase) GetRoom() *Room {
 
 func (e *EntityBase) SetRoom(r *Room) {
 	e.room = r
+}
+
+func (e *EntityBase) CanChangeRooms() bool {
+	return e.canChangeRooms
+}
+
+func (e *EntityBase) SetCanChangeRooms(b bool) {
+	e.canChangeRooms = b
 }
 
