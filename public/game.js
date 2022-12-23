@@ -186,20 +186,20 @@ var update = function() {
   keyPress();
 
   //Check for hitting wall
-  if(pX < 2){
+  if(pX < 0){
       //Wall
-      pX = 2;
-  }else if(pX > canvas.width - 6){
+      pX = 0;
+  }else if(pX > canvas.width - 4){
       //Wall
-      pX = canvas.width - 6;
+      pX = canvas.width - 4;
   }
   
-  if(pY < 2){
+  if(pY < 0){
       //Wall
-      pY = 2;
-  }else if(pY > canvas.height - 6){
+      pY = 0;
+  }else if(pY > canvas.height - 4){
       //Wall
-      pY = canvas.height - 6;
+      pY = canvas.height - 4;
   }
 };
 
@@ -241,8 +241,12 @@ var keyPress = function() {
 };
 
 window.addEventListener("keydown", function (event) {
+  if (Updates == undefined) {
+    return;
+  }
+  
   // Single sends
-  if (event.keyCode == 32 && !keysDown[32] && ownedItemXYOffset[0] != 0) {  // space
+  if (event.keyCode == 32 && !keysDown[32] && ownedItemXYOffset[0] != 0 && Updates[playerTag].BeingHeld == "") {  // space
     ownedItemXYOffset = [0, 0, 0]
     TCPChan.send("D");  // drop item
   } else if (event.keyCode == 37 && !keysDown[37]) { // left
