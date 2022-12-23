@@ -62,7 +62,7 @@ func WallCheck(e EntityInterface) {
 
 	for x := e.GetX() + 1; x < e.GetX() + e.GetWidth() - 1; x++ {  // check for bottom hit
 		// make sure x in range
-		if x < 0 || x >= 160 {
+		if x < 0 || x >= 160  || int(e.GetY() + e.GetHeight()) >= 105 {
 			continue
 		} 
 		// test for hit 
@@ -92,7 +92,7 @@ func WallCheck(e EntityInterface) {
 
 	for y := e.GetY() + 1; y < e.GetY() + e.GetHeight() - 1; y++ {  // check for right hit
 		// make sure y in range
-		if y < 0 || y >= 105 {
+		if y < 0 || y >= 105  || int(e.GetX() + e.GetWidth()) >= 160 {
 			continue
 		} 
 		// test for hit 
