@@ -44,6 +44,18 @@ func traverseEntities(e EntityInterface, output map[string]EntityInterface) {
 }
 
 func WallCheck(e EntityInterface) {
+	if e.GetX() < 0 {
+		e.SetX(0)
+	} else if e.GetX() + e.GetWidth() > 160 {
+		e.SetX(160 - e.GetWidth())
+	}	
+	
+	if e.GetY() < 0 {
+		e.SetY(0)
+	} else if e.GetY() + e.GetHeight() > 105 {
+		e.SetY(105 - e.GetHeight())
+	}
+	
 	// Pixel perfect wall hit check
 	for x := e.GetX() + 1; x < e.GetX() + e.GetWidth() - 1; x++ {  // check for top hit
 			// make sure x in range
@@ -104,21 +116,6 @@ func WallCheck(e EntityInterface) {
 		e.SetvX(-e.GetvX())
 		break
 	}	
-
-	goto Exit
-
-	Exit:
-	if e.GetX() < 0 {
-		e.SetX(0)
-	} else if e.GetX() + e.GetWidth() > 160 {
-		e.SetX(160 - e.GetWidth())
-	}	
-	
-	if e.GetY() < 0 {
-		e.SetY(0)
-	} else if e.GetY() + e.GetHeight() > 105 {
-		e.SetY(105 - e.GetHeight())
-	}
 }
 
 // https://tip.golang.org/doc/go1.8#mapiter
