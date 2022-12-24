@@ -244,9 +244,9 @@ window.addEventListener("keydown", function (event) {
   if (Updates == undefined) {
     return;
   }
-  
+
   // Single sends
-  if (event.keyCode == 32 && !keysDown[32] && ownedItemXYOffset[0] != 0 && Updates[playerTag].BeingHeld == "") {  // space
+  if (event.keyCode == 32 && !keysDown[32] && Updates[playerTag].BeingHeld == "") {  // space
     ownedItemXYOffset = [0, 0, 0]
     TCPChan.send("D");  // drop item
   } else if (event.keyCode == 37 && !keysDown[37]) { // left
