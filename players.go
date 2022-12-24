@@ -32,7 +32,5 @@ func (p *Player) Update(oX, oY float64) {
 		return
 	}
 
-	// if p.held != nil {
-	// //	p.held.Update(p.xDif, p.yDif)
-	// }
+	WallCheck(p)
 }

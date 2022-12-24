@@ -3,6 +3,8 @@ package main
 type Room struct {
 	roomKey string  // name of room layout picture (client has all room layouts already, send room number only once TCP)
 					// roomKey should be of format r1, r2, r3, etc.
+	wallColor string // to tell player what color they can't walk through
+	
 	Entities EntityContainer
 	updateFunc func(*Room)
 	// leftX float64 // simple rectangle room bounds
