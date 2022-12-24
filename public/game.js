@@ -122,6 +122,41 @@ function checkForPixelPerfectHit() {
   return false;
 }
 
+var wHImgData;
+function checkForPixelPerfectWallHit(color) {
+  wHImgData = ctx.getImageData(pX-1, pY-1, 6, 6);
+  var colorRGB = color.match(/\d+/g);   // gets rgb values from css "rgb(xxx, xxx, xxx)"
+  var i = 0;
+
+  for (var y = 0; y < wHImgData.height; y++) {
+    for (var x = 0; x < wHImgData.width; x++) {
+      if (colorRGB[0] == wHImgData.data[i] && colorRGB[1] == wHImgData.data[i+1] && colorRGB[2] == wHImgData.data[i+2] ) {
+        hitX = pX + x;
+        hitY = pY + y;
+
+        hitDirection = "";
+        if (keysDown[37]) {  // left
+          hitDirection = "l";
+        } else if (keysDown[39]) { // right
+          hitDirection = "r";
+        }
+
+        if (keysDown[40]) { // down
+          hitDirection += "d";
+        } else if (keysDown[38]) {  // up
+          hitDirection += "u";
+        }
+
+        return true;
+      } 
+
+      i += 4;
+    }
+  }
+
+  return false;
+}
+
 //Render using the NTSC Atari 2600 pallete
 //https://en.wikipedia.org/wiki/List_of_video_game_console_palettes#Atari_2600
 //(inspect element to get the hex color values from the atari color table)
@@ -179,6 +214,20 @@ var render = function () {
   // if item goes inside player, pick up item
   if (checkForPixelPerfectHit()) {
     TCPChan.send("P" + hitX + "," + hitY + "," + hitDirection);
+  }
+
+  if (checkForPixelPerfectWallHit(hexToRgb(wallColor))) {
+    if (hitDirection.includes("l")) {
+      pX += 2;
+    } else if (hitDirection.includes("r")) {
+      pX -= 2;
+    }
+
+    if (hitDirection.includes("u")) {
+      pY += 2;
+    } else if (hitDirection.includes("d")) {
+      pY -= 2;
+    }
   }
 }
 
