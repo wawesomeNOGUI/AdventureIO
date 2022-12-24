@@ -234,7 +234,7 @@ var render = function () {
 var update = function() {
   keyPress();
 
-  //Check for hitting wall
+  //Check for hitting edge of screen
   if(pX < 0){
       //Wall
       pX = 0;
