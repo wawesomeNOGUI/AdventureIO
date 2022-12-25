@@ -55,7 +55,7 @@ func WallCheck(e EntityInterface) {
 	if e.GetX() <= 0 {
 		if e.GetRoom().leftRoom != nil && e.CanChangeRooms() {
 			changeRoom(e, e.GetRoom().leftRoom)
-			e.SetX(160 - e.GetWidth())
+			e.SetX(160 - e.GetWidth() - 1)
 
 			p, ok := e.(*Player)
 			if ok {
@@ -67,7 +67,7 @@ func WallCheck(e EntityInterface) {
 	} else if e.GetX() + e.GetWidth() >= 160 {
 		if e.GetRoom().rightRoom != nil && e.CanChangeRooms() {
 			changeRoom(e, e.GetRoom().rightRoom)
-			e.SetX(0)
+			e.SetX(1)
 
 			p, ok := e.(*Player)
 			if ok {
@@ -81,7 +81,7 @@ func WallCheck(e EntityInterface) {
 	if e.GetY() <= 0 {
 		if e.GetRoom().aboveRoom != nil && e.CanChangeRooms() {
 			changeRoom(e, e.GetRoom().aboveRoom)
-			e.SetY(105 - e.GetHeight())
+			e.SetY(105 - e.GetHeight() - 1)
 
 			p, ok := e.(*Player)
 			if ok {
@@ -93,7 +93,7 @@ func WallCheck(e EntityInterface) {
 	} else if e.GetY() + e.GetHeight() >= 105 {
 		if e.GetRoom().belowRoom != nil && e.CanChangeRooms() {
 			changeRoom(e, e.GetRoom().belowRoom)
-			e.SetY(0)
+			e.SetY(1)
 
 			p, ok := e.(*Player)
 			if ok {
