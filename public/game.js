@@ -185,11 +185,19 @@ var render = function () {
         ctx.fillStyle = "#ecb0e0";
         ctx.fillRect(Math.round(x), Math.round(y), 4, 4);
       } else {
-        if (Updates[playerTag].BeingHeld != "") {
-          var x = smoothstep(previousUpdate[key].X, Updates[key].X, t);
-          var y = smoothstep(previousUpdate[key].Y, Updates[key].Y, t);
+        var d = Math.sqrt(Math.pow(Updates[playerTag].X - pX, 2) + Math.pow(Updates[playerTag].Y - pY, 2));
+        if (Updates[playerTag].BeingHeld != "" || d > 15) {
+          var x;
+          var y;
+          if (previousUpdate[playerTag] != undefined) {
+            x = smoothstep(previousUpdate[playerTag].X, Updates[playerTag].X, t);
+            y = smoothstep(previousUpdate[playerTag].Y, Updates[playerTag].Y, t);
+          } else {
+            x = Updates[playerTag].X
+            y = Updates[playerTag].Y
+          }
           pX = Math.round(x);
-          pY = Math.round(y);
+          pY = Math.round(y);          
         }
         //Local Player
         ctx.fillStyle = pColor;

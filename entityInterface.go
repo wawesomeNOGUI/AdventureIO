@@ -45,10 +45,16 @@ func traverseEntities(e EntityInterface, output map[string]EntityInterface) {
 	output[e.Key()] = e
 }
 
+func changeRoom(e EntityInterface, r *Room) {
+	delete(e.GetRoom().Entities.entities, e.Key())
+	e.SetRoom(r)
+	r.Entities.StoreEntity(e.Key(), e)
+}
+
 func WallCheck(e EntityInterface) {
-	if e.GetX() < 0 {
+	if e.GetX() <= 0 {
 		if e.GetRoom().leftRoom != nil && e.CanChangeRooms() {
-			e.SetRoom(e.GetRoom().leftRoom)
+			changeRoom(e, e.GetRoom().leftRoom)
 			e.SetX(160 - e.GetWidth())
 
 			p, ok := e.(*Player)
@@ -58,9 +64,9 @@ func WallCheck(e EntityInterface) {
 		} else {
 			e.SetX(0)
 		}
-	} else if e.GetX() + e.GetWidth() > 160 {
+	} else if e.GetX() + e.GetWidth() >= 160 {
 		if e.GetRoom().rightRoom != nil && e.CanChangeRooms() {
-			e.SetRoom(e.GetRoom().rightRoom)
+			changeRoom(e, e.GetRoom().rightRoom)
 			e.SetX(0)
 
 			p, ok := e.(*Player)
@@ -72,9 +78,9 @@ func WallCheck(e EntityInterface) {
 		}
 	}	
 	
-	if e.GetY() < 0 {
+	if e.GetY() <= 0 {
 		if e.GetRoom().aboveRoom != nil && e.CanChangeRooms() {
-			e.SetRoom(e.GetRoom().aboveRoom)
+			changeRoom(e, e.GetRoom().aboveRoom)
 			e.SetY(105 - e.GetHeight())
 
 			p, ok := e.(*Player)
@@ -84,9 +90,9 @@ func WallCheck(e EntityInterface) {
 		} else {
 			e.SetY(0)
 		}
-	} else if e.GetY() + e.GetHeight() > 105 {
+	} else if e.GetY() + e.GetHeight() >= 105 {
 		if e.GetRoom().belowRoom != nil && e.CanChangeRooms() {
-			e.SetRoom(e.GetRoom().belowRoom)
+			changeRoom(e, e.GetRoom().belowRoom)
 			e.SetY(0)
 
 			p, ok := e.(*Player)

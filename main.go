@@ -166,11 +166,11 @@ func echo(w http.ResponseWriter, r *http.Request) {
 				fmt.Println(err)
 			}
 
-			// Walls
-			if x < 2 {
-				x = 2
-			} else if x > 154 {
-				x = 154
+			// Edge of screen
+			if x < 0 {
+				x = 0
+			} else if x > 160 - tmpPlayer.width {
+				x = 160 - tmpPlayer.width
 			}	
 
 			// Move Owned Item (tmpPlayer.held is an EntitiyInterface)
@@ -189,10 +189,10 @@ func echo(w http.ResponseWriter, r *http.Request) {
 				fmt.Println(err)
 			}
 
-			if y < 2 {
-				y = 2
-			} else if y > 99 {
-				y = 99
+			if y < 0 {
+				y = 0
+			} else if y > 105 - tmpPlayer.height {
+				y = 105 - tmpPlayer.height
 			}
 
 			// Move Owned Item (tmpPlayer.held is an EntitiyInterface)
@@ -240,11 +240,11 @@ func echo(w http.ResponseWriter, r *http.Request) {
 				fmt.Println(err)
 			}
 
-			// Walls
-			if x < 2 {
-				x = 2
-			} else if x > 154 {
-				x = 154
+			// Edge of screen
+			if x < 0 {
+				x = 0
+			} else if x > 160 - tmpPlayer.width {
+				x = 160 - tmpPlayer.width
 			}	
 
 			// Move Owned Item (tmpPlayer.held is an EntitiyInterface)
@@ -260,10 +260,10 @@ func echo(w http.ResponseWriter, r *http.Request) {
 				fmt.Println(err)
 			}
 
-			if y < 2 {
-				y = 2
-			} else if y > 99 {
-				y = 99
+			if y < 0 {
+				y = 0
+			} else if y > 105 - tmpPlayer.height {
+				y = 105 - tmpPlayer.height
 			}
 
 			// Move Owned Item (tmpPlayer.held is an EntitiyInterface)
