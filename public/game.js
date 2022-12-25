@@ -70,8 +70,12 @@ var spriteAnimationInterval = setInterval(function(){
 var r1 = new Image();
     r1.src = "sprites/rooms/r1.gif";
 
+var r2 = new Image();
+    r2.src = "sprites/rooms/r2.gif";
+
 var roomSprites = {
-  "r1": r1
+  "r1": r1,
+  "r2": r2
 }
 //==========================================================
 
@@ -172,6 +176,11 @@ var render = function () {
   //Draw room picture (room defined in index.html)
   ctx.drawImage(roomSprites[room], 0, 0)
 
+  //Special room drawings
+  if (room == "r2") {
+    drawColorText(ctx, "ITS DANGEROUS TO GO", "white", 14, 12, 7, 8, 8);
+    drawColorText(ctx, "ALONE! TAKE THIS", "white", 22, 22, 7, 8, 8);
+  }
    //Draw Players And Items
   t += interpolateInc;
 
