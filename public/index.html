@@ -164,7 +164,11 @@ window.addEventListener("load", function(evt) {
           pX = Number(newServerXY[0]);
           pY = Number(newServerXY[1]);
 
-          console.log(pY)
+          //reflect back to server to make sure to cover up any stray old movement messages
+          TCPChan.send("X" + pX);
+          TCPChan.send("Y" + pY);
+          UDPChan.send("X" + pX);
+          UDPChan.send("Y" + pY);
         }
       };
 
