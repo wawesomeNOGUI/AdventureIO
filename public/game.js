@@ -80,8 +80,8 @@ var roomSprites = {
 //==========================================================
 
 // Player Vars
-var pX = 50;
-var pY = 50;
+// var pX = 50;
+// var pY = 50;
 var speed = 0.75;
 var pColor = hexToRgb(borderColor);
 var imgData;
@@ -248,7 +248,27 @@ var render = function () {
   }
 }
 
+var prevRoom = "r1";
 var update = function() {
+  //Check for room change
+  // if (prevRoom != room) {
+    // if (pY <= 0) {
+    //   pY = 105 - 4 - 1;
+    //   // TCPChan.send("Y" + pY);
+    // } else if (pY >= 105-4) {
+    //   pY = 1;
+    //   // TCPChan.send("Y" + pY);
+    // } else if (pX <= 0) {
+    //   pX = 160 - 4 -1;
+    //   // TCPChan.send("X" + pX);
+    // } else if (pX >= 160 - 4) {
+    //   pX = 1;
+    //   // TCPChan.send("X" + pX);
+    // }
+  // }
+
+  prevRoom = room;
+
   keyPress();
 
   //Check for hitting edge of screen
@@ -316,17 +336,17 @@ window.addEventListener("keydown", function (event) {
     ownedItemXYOffset = [0, 0, 0]
     TCPChan.send("D");  // drop item
   } else if (event.keyCode == 37 && !keysDown[37]) { // left
-    pX = Math.round(pX - speed);
-    TCPChan.send("X" + pX);
+    // pX = Math.round(pX - speed);
+    // TCPChan.send("X" + pX);
   } else if (event.keyCode == 39 && !keysDown[39]) { // right
-    pX = Math.round(pX + speed);
-    TCPChan.send("X" + pX);
+    // pX = Math.round(pX + speed);
+    // TCPChan.send("X" + pX);
   } else if (event.keyCode == 40 && !keysDown[40]) { // down
-    pY = Math.round(pY + speed);
-    TCPChan.send("Y" + pY);
+    // pY = Math.round(pY + speed);
+    // TCPChan.send("Y" + pY);
   } else if (event.keyCode == 38 && !keysDown[38]) { // up
-    pY = Math.round(pY - speed);
-    TCPChan.send("Y" + pY);
+    // pY = Math.round(pY - speed);
+    // TCPChan.send("Y" + pY);
   }
 
 
