@@ -27,7 +27,7 @@ func newBat(room *Room, x, y float64) (string, *Bat) {
 	b.s = 1
 	b.K = "bat"	
 	b.room = room
-	b.canChangeRooms = true
+	b.canChangeRooms = false
 
 	numOfBats++
 	b.key = fmt.Sprintf("bat%d", numOfBats)

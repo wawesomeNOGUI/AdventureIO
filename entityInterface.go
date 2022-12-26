@@ -60,6 +60,8 @@ func WallCheck(e EntityInterface) {
 			p, ok := e.(*Player)
 			if ok {
 				reliableChans.SendToPlayer(p.key, p.room.roomKey + "," + p.room.wallColor)
+				reliableChans.SendToPlayer(p.key, fmt.Sprintf("P%f,%f", p.X, p.Y))
+				p.roomChangeChan <- p.room
 			}
 		} else {
 			e.SetX(0)
@@ -72,6 +74,8 @@ func WallCheck(e EntityInterface) {
 			p, ok := e.(*Player)
 			if ok {
 				reliableChans.SendToPlayer(p.key, p.room.roomKey + "," + p.room.wallColor)
+				reliableChans.SendToPlayer(p.key, fmt.Sprintf("P%f,%f", p.X, p.Y))
+				p.roomChangeChan <- p.room
 			}
 		} else {
 			e.SetX(160 - e.GetWidth())
@@ -86,6 +90,8 @@ func WallCheck(e EntityInterface) {
 			p, ok := e.(*Player)
 			if ok {
 				reliableChans.SendToPlayer(p.key, p.room.roomKey + "," + p.room.wallColor)
+				reliableChans.SendToPlayer(p.key, fmt.Sprintf("P%f,%f", p.X, p.Y))
+				p.roomChangeChan <- p.room
 			}
 		} else {
 			e.SetY(0)
@@ -98,6 +104,8 @@ func WallCheck(e EntityInterface) {
 			p, ok := e.(*Player)
 			if ok {
 				reliableChans.SendToPlayer(p.key, p.room.roomKey + "," + p.room.wallColor)
+				reliableChans.SendToPlayer(p.key, fmt.Sprintf("P%f,%f", p.X, p.Y))
+				p.roomChangeChan <- p.room
 			}
 		} else {
 			e.SetY(105 - e.GetHeight())

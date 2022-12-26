@@ -111,6 +111,13 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			//Store a pointer to a Player Struct in the default room
 			room.Entities.StoreEntity(playerTag, tmpPlayer)
 
+			go func() {
+				for {
+					// room = <-tmpPlayer.roomChangeChan //WallCheck will first set room to nil so player can't move while changing rooms
+					room = <-tmpPlayer.roomChangeChan 
+				}
+			}()
+
 			// send two playerreadies, one for each datachannel we're opening
 			playerReady <- true
 			playerReady <- true
@@ -278,6 +285,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			if tmpPlayer.held != nil {
 				room.Entities.StoreEntity(tmpPlayer.held.Key(), tmpPlayer.held)
 			    tmpPlayer.held.SetOwner(nil)
+				tmpPlayer.held.SetRoom(room)
 				tmpPlayer.held = nil
 			}
 		} else if msg.Data[0] == 'P' && tmpPlayer.held == nil {
