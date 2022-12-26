@@ -37,6 +37,8 @@
 
   //Player Vars
   var playerTag;
+  var pX = 50;
+  var pY = 50;
   var ownedItemXYOffset = [0, 0, 0];
   var room = "r1"; // players start in r1
   var wallColor = "#8c58b8";
@@ -157,6 +159,12 @@ window.addEventListener("load", function(evt) {
           room = roomData[0];
           wallColor = roomData[1];
           //console.log(e.data)
+        } else if (e.data[0] == "P") {
+          var newServerXY = e.data.substring(1).split(",");
+          pX = Number(newServerXY[0]);
+          pY = Number(newServerXY[1]);
+
+          console.log(pY)
         }
       };
 
