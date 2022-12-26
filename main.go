@@ -58,8 +58,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	defer room.Entities.DeleteEntity(playerTag) 
 
 	// lets UDP chan onOpen and reliable chan onOpen know that the player has been fully setup in the OnICEConnectionStateChange
-	playerReady := make(chan bool)  
-
+	playerReady := make(chan bool)
 	//===========WEBRTC====================================
 	// Create a new RTCPeerConnection
 	peerConnection, err := api.NewPeerConnection(webrtc.Configuration{})

@@ -195,7 +195,7 @@ var render = function () {
         ctx.fillRect(Math.round(x), Math.round(y), 4, 4);
       } else {
         var d = Math.sqrt(Math.pow(Updates[playerTag].X - pX, 2) + Math.pow(Updates[playerTag].Y - pY, 2));
-        if (Updates[playerTag].BeingHeld != "" || d > 15) {
+        if (Updates[playerTag].BeingHeld != "") {
           var x;
           var y;
           if (previousUpdate[playerTag] != undefined) {

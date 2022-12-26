@@ -5,6 +5,7 @@ package main
 type Player struct {
 	EntityBase
 	BeingHeld string
+	roomChangeChan chan *Room
 }
 
 func newPlayer(tag string, x, y float64) *Player {
@@ -16,6 +17,7 @@ func newPlayer(tag string, x, y float64) *Player {
 	p.K = "p"
 	p.key = tag
 	p.canChangeRooms = true
+	p.roomChangeChan = make(chan *Room)
 
 	return &p
 }
