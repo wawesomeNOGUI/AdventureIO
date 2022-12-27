@@ -1,11 +1,14 @@
 package main
 
-import "sync"
+import (
+    "sync"
+	"github.com/wawesomeNOGUI/adventureIO/roomMapData"
+)
 
 func InitializeRooms(m *sync.Map) {
-	r1key, r1ptr := newRoom("r1", defaultRoomUpdate, &r1Layout, nil, nil, nil, nil)
+	r1key, r1ptr := newRoom("r1", defaultRoomUpdate, &roomMapData.R1Layout, nil, nil, nil, nil)
 	r1ptr.wallColor = "#8c58b8"
-	r2key, r2ptr := newRoom("r2", defaultRoomUpdate, &r2Layout, nil, nil, nil, r1ptr)
+	r2key, r2ptr := newRoom("r2", defaultRoomUpdate, &roomMapData.R2Layout, nil, nil, nil, r1ptr)
 	r2ptr.wallColor = "#442800"
 	r1ptr.aboveRoom = r2ptr
 	m.Store(r1key, r1ptr)
