@@ -27,11 +27,6 @@ type Room struct {
 	rightRoom *Room
 	aboveRoom *Room
 	belowRoom *Room
-
-	leftDoor Vector2
-	rightDoor Vector2
-	aboveDoor Vector2
-	belowDoor Vector2
 }
 
 func newRoom(key string, uF func(*Room), rL *[160][105]bool, l, r, u, d *Room) (string, *Room) {
@@ -49,13 +44,6 @@ func newRoom(key string, uF func(*Room), rL *[160][105]bool, l, r, u, d *Room) (
 	room.rightRoom = r
 	room.aboveRoom = u
 	room.belowRoom = d
-
-	// default door locations 
-	// (-1 means just use edge of screen as where player spawns after changing rooms)
-	room.leftDoor = Vector2{0, 0}
-	room.rightDoor = Vector2{160, 0}
-	room.aboveDoor = Vector2{0, 0}
-	room.belowDoor = Vector2{0, 105}
 
 	room.roomKey = key
 
