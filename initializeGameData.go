@@ -11,9 +11,12 @@ func InitializeRooms(m *sync.Map) {
 	r2key, r2ptr := newRoom("r2", defaultRoomUpdate, &roomMapData.R2Layout, nil, nil, nil, r1ptr)
 	r2ptr.wallColor = "#442800"
 	r1ptr.aboveRoom = r2ptr
-	r3key, r3ptr := newRoom("r3", defaultRoomUpdate, &roomMapData.R1Layout, nil, nil, r1ptr, nil)
+	r3key, r3ptr := newRoom("r3", defaultRoomUpdate, &roomMapData.UpDownLayout, nil, nil, r1ptr, nil)
+	r3ptr.wallColor = "#fcfc68"
+	r1ptr.belowRoom = r3ptr
 	m.Store(r1key, r1ptr)
 	m.Store(r2key, r2ptr)
+	m.Store(r3key, r3ptr)
 }
 
 func InitializeEntities(m *sync.Map) {
