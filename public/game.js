@@ -73,9 +73,13 @@ var r1 = new Image();
 var r2 = new Image();
     r2.src = "sprites/rooms/r2.gif";
 
+var r3 = new Image();
+    r3.src = "sprites/rooms/r3.gif";
+
 var roomSprites = {
   "r1": r1,
-  "r2": r2
+  "r2": r2,
+  "r3": r3
 }
 //==========================================================
 
@@ -178,8 +182,8 @@ var render = function () {
 
   //Special room drawings
   if (room == "r2") {
-    drawColorText(ctx, "ITS DANGEROUS TO GO", "white", 14, 12, 7, 8, 8);
-    drawColorText(ctx, "ALONE! TAKE THIS", "white", 22, 22, 7, 8, 8);
+    drawColorText(ctx, "ITS DANGEROUS TO GO", "#ececec", 14, 12, 7, 8, 8);
+    drawColorText(ctx, "ALONE! TAKE THIS", "#ececec", 22, 22, 7, 8, 8);
   }
    //Draw Players And Items
   t += interpolateInc;
