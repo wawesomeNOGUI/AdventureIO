@@ -70,6 +70,7 @@ func WallCheck(e EntityInterface) {
 			}
 		} else {
 			e.SetX(0)
+			e.SetvX(-e.GetvX())
 		}
 	} else if e.GetX() + e.GetWidth() >= 160 {
 		if e.GetRoom().rightRoom != nil && e.CanChangeRooms() {
@@ -89,6 +90,7 @@ func WallCheck(e EntityInterface) {
 			}
 		} else {
 			e.SetX(160 - e.GetWidth())
+			e.SetvX(-e.GetvX())
 		}
 	}	
 	
@@ -110,6 +112,7 @@ func WallCheck(e EntityInterface) {
 			}
 		} else {
 			e.SetY(0)
+			e.SetvY(-e.GetvY())
 		}
 	} else if e.GetY() + e.GetHeight() >= 105 {
 		if e.GetRoom().belowRoom != nil && e.CanChangeRooms() {
@@ -129,6 +132,7 @@ func WallCheck(e EntityInterface) {
 			}
 		} else {
 			e.SetY(105 - e.GetHeight())
+			e.SetvY(-e.GetvY())
 		}
 	}
 
@@ -300,6 +304,10 @@ func (c *EntityContainer) isEntityHere(self EntityInterface, x, y float64) (bool
 		if v == self {
 			continue
 		}
+		// to not let entities pick up same type as themselves (kinda fun interaction though maybe make an option)
+		if v.GetKind() == self.GetKind() {
+			continue
+		}
 
 		d := math.Sqrt(math.Pow(x - v.GetX(), 2) + math.Pow(y - v.GetY(), 2))
 
@@ -333,6 +341,10 @@ func (c *EntityContainer) nonConcurrentSafeClosestEntity(self string, closeParam
 
 	for k, v := range c.entities {
 		if self == k {
+			continue
+		}
+		// to not let entities pick up same type as themselves (kinda fun interaction though maybe make an option)
+		if v.GetKind() == c.entities[self].GetKind() {
 			continue
 		}
 

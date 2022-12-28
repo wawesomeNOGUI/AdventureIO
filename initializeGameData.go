@@ -32,9 +32,16 @@ func InitializeEntities(m *sync.Map) {
 	tmpR.Entities.StoreEntity(newSword(tmpR, 105, 55))
 	tmpR.Entities.StoreEntity(newSword(tmpR, 120, 55))
 	tmpR.Entities.StoreEntity(newSword(tmpR, 135, 55))
-	//tmpR.Entities.StoreEntity(newBat(tmpR, 50, 75))
-	// tmpR.Entities.StoreEntity(newBat(tmpR, 10, 15))
 	m.Store("r2", tmpR)
+
+	r, _ = m.Load("r1")
+	tmpR = r.(*Room)
+	tmpR.Entities.StoreEntity(newBat(tmpR, 50, 75))
+	tmpR.Entities.StoreEntity(newBat(tmpR, 10, 15))
+	tmpR.Entities.StoreEntity(newBat(tmpR, 50, 75))
+	tmpR.Entities.StoreEntity(newBat(tmpR, 10, 15))
+	tmpR.Entities.StoreEntity(newBat(tmpR, 50, 75))
+	m.Store("r1", tmpR)
 
 	/*
 	m.Store(newBat(50, 75))

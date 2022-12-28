@@ -329,6 +329,8 @@ func echo(w http.ResponseWriter, r *http.Request) {
 				str := "I" + tmpPlayer.held.Key() + "," + fmt.Sprintf("%.1f", tmpPlayer.held.GetX()-tmpPlayer.X)  + "," + fmt.Sprintf("%.1f", tmpPlayer.held.GetY()-tmpPlayer.Y)
 				reliableChans.SendToPlayer(playerTag, str)
 			}
+		} else if msg.Data[0] == 'U' { // player sent username
+			reliableChans.Broadcast("U" + playerTag + "," + string(msg.Data[1:]))
 		}
 
 		room.Entities.StoreEntity(playerTag, tmpPlayer)
