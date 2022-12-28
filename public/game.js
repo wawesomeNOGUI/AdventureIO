@@ -95,7 +95,7 @@ var items = [];
 
 var hitX;
 var hitY;
-var hitDirection;
+var hitDirection = "";
 function checkForPixelPerfectHit() {
   imgData = ctx.getImageData(pX, pY, 4, 4);
   var pColorRGB = pColor.match(/\d+/g);   // gets rgb values from css "rgb(xxx, xxx, xxx)"
@@ -136,33 +136,39 @@ function checkForPixelPerfectWallHit(color) {
   var colorRGB = color.match(/\d+/g);   // gets rgb values from css "rgb(xxx, xxx, xxx)"
   var i = 0;
 
-  for (var y = 0; y < wHImgData.height; y++) {
-    for (var x = 0; x < wHImgData.width; x++) {
-      if (colorRGB[0] == wHImgData.data[i] && colorRGB[1] == wHImgData.data[i+1] && colorRGB[2] == wHImgData.data[i+2] ) {
-        hitX = pX + x;
-        hitY = pY + y;
+  hitDirection = "";
 
-        hitDirection = "";
-        if (keysDown[37]) {  // left
-          hitDirection = "l";
-        } else if (keysDown[39]) { // right
-          hitDirection = "r";
-        }
-
-        if (keysDown[40]) { // down
-          hitDirection += "d";
-        } else if (keysDown[38]) {  // up
-          hitDirection += "u";
-        }
-
-        return true;
-      } 
-
-      i += 4;
+  // check for left hit
+  for (var i = 1; i < wHImgData.height-1; i++) {
+    if (colorRGB[0] == wHImgData.data[i*4*wHImgData.width] && colorRGB[1] == wHImgData.data[i*4*wHImgData.width+1] && colorRGB[2] == wHImgData.data[i*4*wHImgData.width+2]) {
+      hitDirection += "l";
+      break;
     }
   }
 
-  return false;
+  // check for right hit
+  for (var i = 1; i < wHImgData.height-1; i++) {
+    if (colorRGB[0] == wHImgData.data[(wHImgData.width-1)*4 + i*4*wHImgData.width] && colorRGB[1] == wHImgData.data[(wHImgData.width-1)*4 + i*4*wHImgData.width+1] && colorRGB[2] == wHImgData.data[(wHImgData.width-1)*4 + i*4*wHImgData.width+2]) {
+      hitDirection += "r";
+      break;
+    }
+  }
+
+  // check for up hit
+  for (var i = 1; i < wHImgData.width-1; i++) {
+    if (colorRGB[0] == wHImgData.data[i*4] && colorRGB[1] == wHImgData.data[i*4+1] && colorRGB[2] == wHImgData.data[i*4+2]) {
+      hitDirection += "u";
+      break;
+    }
+  }
+
+  // check for down hit
+  for (var i = 1; i < wHImgData.width-1; i++) {
+    if (colorRGB[0] == wHImgData.data[i*4 + wHImgData.data.length-wHImgData.width*4] && colorRGB[1] == wHImgData.data[i*4+wHImgData.data.length-wHImgData.width*4+1] && colorRGB[2] == wHImgData.data[i*4+wHImgData.data.length-wHImgData.width*4+2]) {
+      hitDirection += "d";
+      break;
+    }
+  }
 }
 
 // ran after receive playerTag
@@ -263,41 +269,10 @@ var render = function () {
   if (checkForPixelPerfectHit()) {
     TCPChan.send("P" + hitX + "," + hitY + "," + hitDirection);
   }
-
-  if (checkForPixelPerfectWallHit(hexToRgb(wallColor))) {
-    if (hitDirection.includes("l")) {
-      pX += 2;
-    } else if (hitDirection.includes("r")) {
-      pX -= 2;
-    }
-
-    if (hitDirection.includes("u")) {
-      pY += 2;
-    } else if (hitDirection.includes("d")) {
-      pY -= 2;
-    }
-  }
 }
 
 var prevRoom = "r1";
 var update = function() {
-  //Check for room change
-  // if (prevRoom != room) {
-    // if (pY <= 0) {
-    //   pY = 105 - 4 - 1;
-    //   // TCPChan.send("Y" + pY);
-    // } else if (pY >= 105-4) {
-    //   pY = 1;
-    //   // TCPChan.send("Y" + pY);
-    // } else if (pX <= 0) {
-    //   pX = 160 - 4 -1;
-    //   // TCPChan.send("X" + pX);
-    // } else if (pX >= 160 - 4) {
-    //   pX = 1;
-    //   // TCPChan.send("X" + pX);
-    // }
-  // }
-
   prevRoom = room;
 
   keyPress();
@@ -338,19 +313,21 @@ var sendToServerInterval = setInterval(function(){
 */
 
 var keyPress = function() {
+  checkForPixelPerfectWallHit(hexToRgb(wallColor));
+
   for(var key in keysDown) {
     var value = Number(key);
 
-    if (value == 37) {   //37 = left
+    if (value == 37 && !hitDirection.includes("l")) {   //37 = left
       pX = Math.round(pX - speed);
       UDPChan.send("X" + pX);
-    } else if (value == 39) {  //39 = right
+    } else if (value == 39 && !hitDirection.includes("r")) {  //39 = right
       pX = Math.round(pX + speed);
       UDPChan.send("X" + pX);
-    } else if (value == 40) {  //40 = down
+    } else if (value == 40 && !hitDirection.includes("d")) {  //40 = down
       pY = Math.round(pY + speed);
       UDPChan.send("Y" + pY);
-    } else if (value == 38) {  //38 = up
+    } else if (value == 38 && !hitDirection.includes("u")) {  //38 = up
       pY = Math.round(pY - speed);
       UDPChan.send("Y" + pY);
     }
