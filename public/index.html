@@ -37,6 +37,7 @@
 
   //Player Vars
   var playerTag;
+  var userNameMap = {}
   var pX = 50;
   var pY = 50;
   var ownedItemXYOffset = [0, 0, 0];
@@ -104,7 +105,7 @@ window.addEventListener("load", function(evt) {
     console.log(pc.iceConnectionState)
     if (pc.iceConnectionState == "connected" && !animating){
       animating = true;
-      animate(step); //start client side loop in game.js
+      askForUserName(); //start client side in game.js
     }
   }
   pc.onicecandidate = event => {
@@ -169,6 +170,9 @@ window.addEventListener("load", function(evt) {
           TCPChan.send("Y" + pY);
           UDPChan.send("X" + pX);
           UDPChan.send("Y" + pY);
+        } else if (e.data[0] == "U") {
+          var tmp = e.data.substring(1).split(",");
+          userNameMap[tmp[0]] = tmp[1];
         }
       };
 
