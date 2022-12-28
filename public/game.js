@@ -165,19 +165,19 @@ function checkForPixelPerfectWallHit(color) {
   return false;
 }
 
+// ran after receive playerTag
 function askForUserName() {
   ctx.clearRect(0, 0, width, height);
   
-  //let userName = prompt("Inpit User Name:", "Fizz Buzz");
+  let userName = prompt("Inpit User Name:", "Fizz Buzz");
 
-  animate(step);
-
-  // if (userName == null || userName == "Fizz Buzz") {
-  //   askForUserName();
-  // } else {
-  //   TCPChan.send("U" + userName);
-  //   animate(step);
-  // }
+  if (userName == null || userName == "Fizz Buzz") {
+    askForUserName();
+  } else {
+    TCPChan.send("U" + userName);
+    userNameMap[playerTag] = userName;
+    animate(step);
+  }
 }
 
 //Render using the NTSC Atari 2600 pallete
@@ -236,7 +236,12 @@ var render = function () {
       if (userNameMap[key] != undefined && keysDown[17] != undefined) {  // have to hold down ctrl to see usernames
         ctx.fillStyle = "#000000A0";
         ctx.font = "0.5px";
-        ctx.fillText(userNameMap[key], Math.round(x) - 2, Math.round(y));
+
+        if (key == playerTag) {
+          ctx.fillText(userNameMap[key], pX - 2, pY);
+        } else {
+          ctx.fillText(userNameMap[key], Math.round(x) - 2, Math.round(y));
+        }
       }
     } else if (previousUpdate.hasOwnProperty(key)) { // its an item or entity
       if (key == ownedItemXYOffset[0]) {
@@ -266,9 +271,9 @@ var render = function () {
       pX -= 2;
     }
 
-    if (hitDirection.includes("u")) {
+    if (hitDirection[0] == "u") {
       pY += 2;
-    } else if (hitDirection.includes("d")) {
+    } else if (hitDirection[0] == "d") {
       pY -= 2;
     }
   }
