@@ -168,14 +168,16 @@ function checkForPixelPerfectWallHit(color) {
 function askForUserName() {
   ctx.clearRect(0, 0, width, height);
   
-  let userName = prompt("Inpit User Name:", "Fizz Buzz");
+  //let userName = prompt("Inpit User Name:", "Fizz Buzz");
 
-  if (userName == null || userName == "Fizz Buzz") {
-    askForUserName();
-  } else {
-    TCPChan.send("U" + userName);
-    animate(step);
-  }
+  animate(step);
+
+  // if (userName == null || userName == "Fizz Buzz") {
+  //   askForUserName();
+  // } else {
+  //   TCPChan.send("U" + userName);
+  //   animate(step);
+  // }
 }
 
 //Render using the NTSC Atari 2600 pallete
@@ -210,13 +212,6 @@ var render = function () {
         // Draw Player
         ctx.fillStyle = "#ecb0e0";
         ctx.fillRect(Math.round(x), Math.round(y), 4, 4);
-
-        // Draw username
-        if (userNameMap[key] != undefined) {
-          ctx.fillStyle = "#000000A0";
-          ctx.font = "0.5px";
-          ctx.fillText(userNameMap[key], Math.round(x) - 2, Math.round(y));
-        }
       } else {
         var d = Math.sqrt(Math.pow(Updates[playerTag].X - pX, 2) + Math.pow(Updates[playerTag].Y - pY, 2));
         if (Updates[playerTag].BeingHeld != "") {
@@ -235,6 +230,13 @@ var render = function () {
         //Local Player
         ctx.fillStyle = pColor;
         ctx.fillRect(pX, pY, 4, 4);
+      }
+
+      // Draw all usernames
+      if (userNameMap[key] != undefined && keysDown[17] != undefined) {  // have to hold down ctrl to see usernames
+        ctx.fillStyle = "#000000A0";
+        ctx.font = "0.5px";
+        ctx.fillText(userNameMap[key], Math.round(x) - 2, Math.round(y));
       }
     } else if (previousUpdate.hasOwnProperty(key)) { // its an item or entity
       if (key == ownedItemXYOffset[0]) {
