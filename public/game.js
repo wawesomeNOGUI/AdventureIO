@@ -271,9 +271,9 @@ var render = function () {
       pX -= 2;
     }
 
-    if (hitDirection[0] == "u") {
+    if (hitDirection.includes("u")) {
       pY += 2;
-    } else if (hitDirection[0] == "d") {
+    } else if (hitDirection.includes("d")) {
       pY -= 2;
     }
   }
