@@ -76,10 +76,18 @@ var r2 = new Image();
 var r3 = new Image();
     r3.src = "sprites/rooms/r3.gif";
 
+var r4 = new Image();
+    r4.src = "sprites/rooms/r4.gif";
+
+var r5 = new Image();
+    r5.src = "sprites/rooms/r5.gif";
+
 var roomSprites = {
   "r1": r1,
   "r2": r2,
-  "r3": r3
+  "r3": r3,
+  "r4": r4,
+  "r5": r5
 }
 //==========================================================
 
