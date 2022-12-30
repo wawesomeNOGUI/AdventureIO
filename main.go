@@ -55,6 +55,8 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	}
 	room = v.(*Room)
 
+	var pRoomMutex sync.Mutex
+
 	defer room.Entities.DeleteEntity(playerTag) 
 
 	// lets UDP chan onOpen and reliable chan onOpen know that the player has been fully setup in the OnICEConnectionStateChange
@@ -113,7 +115,10 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			go func() {
 				for {
 					// room = <-tmpPlayer.roomChangeChan //WallCheck will first set room to nil so player can't move while changing rooms
-					room = <-tmpPlayer.roomChangeChan 
+					tmp := <-tmpPlayer.roomChangeChan 
+					pRoomMutex.Lock()
+					room = tmp
+					pRoomMutex.Unlock()
 				}
 			}()
 
@@ -159,6 +164,9 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 	// Register text message handling
 	dataChannel.OnMessage(func(msg webrtc.DataChannelMessage) {
+		pRoomMutex.Lock()
+		defer pRoomMutex.Unlock()
+
 		playerStruct := room.Entities.LoadEntity(playerTag)
 		if playerStruct == nil {
 		 	// fmt.Println("Uh oh")
@@ -232,6 +240,8 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	// for user controls
 	reliableChannel.OnMessage(func(msg webrtc.DataChannelMessage) {
 		// fmt.Printf("Message from DataChannel '%s': '%s'\n", reliableChannel.Label(), string(msg.Data))
+		pRoomMutex.Lock()
+		defer pRoomMutex.Unlock()
 
 		playerStruct := room.Entities.LoadEntity(playerTag)
 		if playerStruct == nil {

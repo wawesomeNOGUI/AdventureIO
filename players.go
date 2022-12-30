@@ -12,8 +12,8 @@ func newPlayer(tag string, x, y float64) *Player {
 	p := Player{}
 	p.X = x 
 	p.Y = y
-	p.width = 4
-	p.height = 4
+	p.width = 3
+	p.height = 3
 	p.K = "p"
 	p.key = tag
 	p.canChangeRooms = true

@@ -8,15 +8,28 @@ import (
 func InitializeRooms(m *sync.Map) {
 	r1key, r1ptr := newRoom("r1", defaultRoomUpdate, &roomMapData.R1Layout, nil, nil, nil, nil)
 	r1ptr.wallColor = "#8c58b8"
+
 	r2key, r2ptr := newRoom("r2", defaultRoomUpdate, &roomMapData.R2Layout, nil, nil, nil, r1ptr)
 	r2ptr.wallColor = "#442800"
 	r1ptr.aboveRoom = r2ptr
+
 	r3key, r3ptr := newRoom("r3", castleRoomUpdate, &roomMapData.UpDownLayout, nil, nil, r1ptr, nil)
 	r3ptr.wallColor = "#fcfc68"
 	r1ptr.belowRoom = r3ptr
+
+	r4key, r4ptr := newRoom("r4", defaultRoomUpdate, &roomMapData.R4Layout, nil, nil, r3ptr, nil)
+	r4ptr.wallColor = "#74b474"
+	r3ptr.belowRoom = r4ptr
+
+	r5key, r5ptr := newRoom("r5", defaultRoomUpdate, &roomMapData.R5Layout, nil, nil, r4ptr, nil)
+	r5ptr.wallColor = "#404040"
+	r4ptr.belowRoom = r5ptr
+
 	m.Store(r1key, r1ptr)
 	m.Store(r2key, r2ptr)
 	m.Store(r3key, r3ptr)
+	m.Store(r4key, r4ptr)
+	m.Store(r5key, r5ptr)
 }
 
 func InitializeEntities(m *sync.Map) {
@@ -36,10 +49,6 @@ func InitializeEntities(m *sync.Map) {
 
 	r, _ = m.Load("r1")
 	tmpR = r.(*Room)
-	tmpR.Entities.StoreEntity(newBat(tmpR, 50, 75))
-	tmpR.Entities.StoreEntity(newBat(tmpR, 10, 15))
-	tmpR.Entities.StoreEntity(newBat(tmpR, 50, 75))
-	tmpR.Entities.StoreEntity(newBat(tmpR, 10, 15))
 	tmpR.Entities.StoreEntity(newBat(tmpR, 50, 75))
 	m.Store("r1", tmpR)
 
