@@ -168,10 +168,10 @@ window.addEventListener("load", function(evt) {
           pY = Number(newServerXY[1]);
 
           //reflect back to server to make sure to cover up any stray old movement messages
-          TCPChan.send("X" + pX);
-          TCPChan.send("Y" + pY);
-          UDPChan.send("X" + pX);
-          UDPChan.send("Y" + pY);
+          TCPChan.send(room + ",X" + pX);
+          TCPChan.send(room + ",Y" + pY);
+          UDPChan.send(room + ",X" + pX);
+          UDPChan.send(room + ",Y" + pY);
         } else if (e.data[0] == "U") {
           var tmp = e.data.substring(1).split(",");
           userNameMap[tmp[0]] = tmp[1];
