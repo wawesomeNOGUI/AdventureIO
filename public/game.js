@@ -49,6 +49,12 @@ var batSprite0 = new Image();
 var batSprite1 = new Image();
     batSprite1.src = "sprites/bat_1.png";
 
+var dragonSprite = new Image();
+    dragonSprite.src = "sprites/dragon.gif";
+
+var dragonSpriteMouthOpen = new Image();
+    dragonSpriteMouthOpen.src = "sprites/dragonMouthOpen.gif";
+
 var doorGrateSprite = new Image();
     doorGrateSprite.src = "sprites/doorGrate.gif";
 
@@ -56,6 +62,7 @@ var spriteMap = {
   "sword": swordSprite,
   "key": keySprite,
   "bat": batSprite0,
+  "drg": dragonSprite,
   "dG": doorGrateSprite
 }
 
@@ -65,6 +72,13 @@ var spriteAnimationInterval = setInterval(function(){
     spriteMap["bat"] = batSprite1;
   } else {
     spriteMap["bat"] = batSprite0;
+  }
+
+  //Dragon animation
+  if (spriteMap["drg"] == dragonSprite) {
+    spriteMap["drg"] = dragonSpriteMouthOpen;
+  } else {
+    spriteMap["drg"] = dragonSprite;
   }
   
 }, 250)
