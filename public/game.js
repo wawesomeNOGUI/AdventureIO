@@ -49,10 +49,14 @@ var batSprite0 = new Image();
 var batSprite1 = new Image();
     batSprite1.src = "sprites/bat_1.png";
 
+var doorGrateSprite = new Image();
+    doorGrateSprite.src = "sprites/doorGrate.gif";
+
 var spriteMap = {
   "sword": swordSprite,
   "key": keySprite,
-  "bat": batSprite0
+  "bat": batSprite0,
+  "dG": doorGrateSprite
 }
 
 var spriteAnimationInterval = setInterval(function(){
