@@ -167,6 +167,17 @@ func echo(w http.ResponseWriter, r *http.Request) {
 		pRoomMutex.Lock()
 		defer pRoomMutex.Unlock()
 
+		roomNumIndex := strings.Index(string(msg.Data), ",")
+		if roomNumIndex == -1 {
+			return
+		}
+		getRoomFromMsg := string(msg.Data[:roomNumIndex])
+		if getRoomFromMsg != room.roomKey {
+			return
+		}
+
+		msg.Data = msg.Data[roomNumIndex + 1:]
+
 		playerStruct := room.Entities.LoadEntity(playerTag)
 		if playerStruct == nil {
 		 	// fmt.Println("Uh oh")
@@ -242,6 +253,17 @@ func echo(w http.ResponseWriter, r *http.Request) {
 		// fmt.Printf("Message from DataChannel '%s': '%s'\n", reliableChannel.Label(), string(msg.Data))
 		pRoomMutex.Lock()
 		defer pRoomMutex.Unlock()
+
+		roomNumIndex := strings.Index(string(msg.Data), ",")
+		if roomNumIndex == -1 {
+			return
+		}
+		getRoomFromMsg := string(msg.Data[:roomNumIndex])
+		if getRoomFromMsg != room.roomKey {
+			return
+		}
+
+		msg.Data = msg.Data[roomNumIndex + 1:]
 
 		playerStruct := room.Entities.LoadEntity(playerTag)
 		if playerStruct == nil {

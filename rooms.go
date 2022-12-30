@@ -77,7 +77,7 @@ func castleRoomUpdate(r *Room) {
 			if ok {
 				reliableChans.SendToPlayer(p.key, fmt.Sprintf("P%f,%f", p.X, p.Y))
 			}
-		} else if v.GetY() <= 52 && v.GetX() > 73 && v.GetX() < 86 - v.GetWidth() {
+		} else if v.GetY() <= 52 && v.GetX() > 73 && v.GetX() <= 86 - v.GetWidth() {
 			if v.GetRoom().aboveRoom != nil && v.CanChangeRooms() {
 				changeRoom(v, v.GetRoom().aboveRoom)
 				prevY := v.GetY()
