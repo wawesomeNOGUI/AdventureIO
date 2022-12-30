@@ -136,6 +136,8 @@ func WallCheck(e EntityInterface) {
 		}
 	}
 
+	wallHit := false
+
 	// Pixel perfect wall hit check
 	for x := e.GetX() + 1; x < e.GetX() + e.GetWidth() - 1; x++ {  // check for top hit
 			// make sure x in range
@@ -149,6 +151,7 @@ func WallCheck(e EntityInterface) {
 
 			e.SetY(e.GetY()+1)
 			e.SetvY(-e.GetvY())
+			wallHit = true
 			break
 	}
 
@@ -164,6 +167,7 @@ func WallCheck(e EntityInterface) {
 
 		e.SetY(e.GetY()-1)
 		e.SetvY(-e.GetvY())
+		wallHit = true
 		break
 	}
 
@@ -179,6 +183,7 @@ func WallCheck(e EntityInterface) {
 
 		e.SetX(e.GetX()+1)
 		e.SetvX(-e.GetvX())
+		wallHit = true
 		break
 	}
 
@@ -194,8 +199,17 @@ func WallCheck(e EntityInterface) {
 
 		e.SetX(e.GetX()-1)
 		e.SetvX(-e.GetvX())
+		wallHit = true
 		break
 	}	
+
+	// make sure player knows they hit the wall and change they're position if they haven't already
+	if wallHit {
+	// 	p, ok := e.(*Player)
+	// 	if ok {
+	// 		reliableChans.SendToPlayer(p.key, fmt.Sprintf("P%f,%f", p.X, p.Y))
+	// 	}
+	}
 }
 
 // https://tip.golang.org/doc/go1.8#mapiter
