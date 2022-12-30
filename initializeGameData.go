@@ -52,6 +52,11 @@ func InitializeEntities(m *sync.Map) {
 	tmpR.Entities.StoreEntity(newBat(tmpR, 50, 75))
 	m.Store("r1", tmpR)
 
+	r, _ = m.Load("r5")
+	tmpR = r.(*Room)
+	tmpR.Entities.StoreEntity(newDoorGrate(tmpR, 10, 10))
+	m.Store("r5", tmpR)
+
 	/*
 	m.Store(newBat(50, 75))
 	m.Store(newBat(50, 6))

@@ -31,7 +31,10 @@ func newItem(kind string, r *Room, x, y, w, h float64) (string, *Item) {
 
 func newSword(r *Room, x, y float64) (string, *Item) {
 	return newItem("sword", r, x, y, 10, 5)
+}
 
+func newDoorGrate(r *Room, x, y float64) (string, *Item) {
+	return newItem("dG", r, x, y, 46, 8)
 }
 
 func (b *Item) Update(oX, oY float64) {
@@ -72,11 +75,17 @@ func (c *EntityContainer) isItemHere(self EntityInterface, x, y float64) (bool, 
 			continue
 		}
 
-		d := math.Sqrt(math.Pow(x - v.GetX(), 2) + math.Pow(y - v.GetY(), 2))
-
-		if d < 10 {
-			return true, k
+		if x >= v.GetX() && x <= v.GetX() + v.GetWidth() {
+			if y >= v.GetY() && y <= v.GetY() + v.GetHeight() {
+				return true, k
+			}
 		}
+
+		// d := math.Sqrt(math.Pow(x - v.GetX(), 2) + math.Pow(y - v.GetY(), 2))
+
+		// if d < v.GetWidth() + v.GetHeight() {
+		// 	return true, k
+		// }
 	}
 
 	return false, ""

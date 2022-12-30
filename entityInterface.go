@@ -323,10 +323,10 @@ func (c *EntityContainer) isEntityHere(self EntityInterface, x, y float64) (bool
 			continue
 		}
 
-		d := math.Sqrt(math.Pow(x - v.GetX(), 2) + math.Pow(y - v.GetY(), 2))
-
-		if d < 10 {
-			return true, k
+		if x >= v.GetX() && x <= v.GetX() + v.GetWidth() {
+			if y >= v.GetY() && y <= v.GetY() + v.GetHeight() {
+				return true, k
+			}
 		}
 	}
 
