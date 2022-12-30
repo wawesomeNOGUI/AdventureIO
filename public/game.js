@@ -188,7 +188,7 @@ function askForUserName() {
   if (userName == null || userName == "Fizz Buzz") {
     askForUserName();
   } else {
-    TCPChan.send("U" + userName);
+    TCPChan.send(room +",U" + userName);
     userNameMap[playerTag] = userName;
     animate(step);
   }
@@ -275,7 +275,7 @@ var render = function () {
   // If local player not holding item do Item hit detection
   // if item goes inside player, pick up item
   if (checkForPixelPerfectHit()) {
-    TCPChan.send("P" + hitX + "," + hitY + "," + hitDirection);
+    TCPChan.send(room +",P" + hitX + "," + hitY + "," + hitDirection);
   }
 }
 
@@ -320,6 +320,10 @@ var sendToServerInterval = setInterval(function(){
 }, 40);  // sends updates to server every 40 ms instead of every animation loop
 */
 
+// var keyCheckInterval = setInterval(function() {
+  // keyPress();
+// }, 7)  // 144hz
+
 var keyPress = function() {
   checkForPixelPerfectWallHit(hexToRgb(wallColor));
 
@@ -328,16 +332,16 @@ var keyPress = function() {
 
     if (value == 37 && !hitDirection.includes("l")) {   //37 = left
       pX = Math.round(pX - speed);
-      UDPChan.send("X" + pX);
+      UDPChan.send(room +",X" + pX);
     } else if (value == 39 && !hitDirection.includes("r")) {  //39 = right
       pX = Math.round(pX + speed);
-      UDPChan.send("X" + pX);
+      UDPChan.send(room +",X" + pX);
     } else if (value == 40 && !hitDirection.includes("d")) {  //40 = down
       pY = Math.round(pY + speed);
-      UDPChan.send("Y" + pY);
+      UDPChan.send(room +",Y" + pY);
     } else if (value == 38 && !hitDirection.includes("u")) {  //38 = up
       pY = Math.round(pY - speed);
-      UDPChan.send("Y" + pY);
+      UDPChan.send(room +",Y" + pY);
     }
   }
 };
@@ -350,7 +354,7 @@ window.addEventListener("keydown", function (event) {
   // Single sends
   if (event.keyCode == 32 && !keysDown[32] && Updates[playerTag].BeingHeld == "") {  // space
     ownedItemXYOffset = [0, 0, 0]
-    TCPChan.send("D");  // drop item
+    TCPChan.send(room +",D");  // drop item
   } else if (event.keyCode == 37 && !keysDown[37]) { // left
     // pX = Math.round(pX - speed);
     // TCPChan.send("X" + pX);
@@ -376,17 +380,17 @@ window.addEventListener("keyup", function (event) {
   // come in first and then the late TCP message of where user stopped will make it look
   // to other players like a player rubberbanded 
   if (event.keyCode == 37) { // left
-    UDPChan.send("X" + pX);
-    UDPChan.send("X" + pX);
+    UDPChan.send(room +",X" + pX);
+    UDPChan.send(room +",X" + pX);
   } else if (event.keyCode == 39) { // right
-    UDPChan.send("X" + pX);
-    UDPChan.send("X" + pX);
+    UDPChan.send(room +",X" + pX);
+    UDPChan.send(room +",X" + pX);
   } else if (event.keyCode == 40) { // down
-    UDPChan.send("Y" + pY);
-    UDPChan.send("Y" + pY);
+    UDPChan.send(room +",Y" + pY);
+    UDPChan.send(room +",Y" + pY);
   } else if (event.keyCode == 38) { // up
-    UDPChan.send("Y" + pY);
-    UDPChan.send("Y" + pY);
+    UDPChan.send(room +",Y" + pY);
+    UDPChan.send(room +",Y" + pY);
   }
 
   delete keysDown[event.keyCode];
