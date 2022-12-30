@@ -139,17 +139,18 @@ function checkForPixelPerfectHit() {
 }
 
 var wHImgData;
+var wallHitDirection = "";
 function checkForPixelPerfectWallHit(color) {
   wHImgData = ctx.getImageData(pX-1, pY-1, 6, 6);
   var colorRGB = color.match(/\d+/g);   // gets rgb values from css "rgb(xxx, xxx, xxx)"
   var i = 0;
 
-  hitDirection = "";
+  wallHitDirection = "";
 
   // check for left hit
   for (var i = 1; i < wHImgData.height-1; i++) {
     if (colorRGB[0] == wHImgData.data[i*4*wHImgData.width] && colorRGB[1] == wHImgData.data[i*4*wHImgData.width+1] && colorRGB[2] == wHImgData.data[i*4*wHImgData.width+2]) {
-      hitDirection += "l";
+      wallHitDirection += "l";
       break;
     }
   }
@@ -157,7 +158,7 @@ function checkForPixelPerfectWallHit(color) {
   // check for right hit
   for (var i = 1; i < wHImgData.height-1; i++) {
     if (colorRGB[0] == wHImgData.data[(wHImgData.width-1)*4 + i*4*wHImgData.width] && colorRGB[1] == wHImgData.data[(wHImgData.width-1)*4 + i*4*wHImgData.width+1] && colorRGB[2] == wHImgData.data[(wHImgData.width-1)*4 + i*4*wHImgData.width+2]) {
-      hitDirection += "r";
+      wallHitDirection += "r";
       break;
     }
   }
@@ -165,7 +166,7 @@ function checkForPixelPerfectWallHit(color) {
   // check for up hit
   for (var i = 1; i < wHImgData.width-1; i++) {
     if (colorRGB[0] == wHImgData.data[i*4] && colorRGB[1] == wHImgData.data[i*4+1] && colorRGB[2] == wHImgData.data[i*4+2]) {
-      hitDirection += "u";
+      wallHitDirection += "u";
       break;
     }
   }
@@ -173,7 +174,7 @@ function checkForPixelPerfectWallHit(color) {
   // check for down hit
   for (var i = 1; i < wHImgData.width-1; i++) {
     if (colorRGB[0] == wHImgData.data[i*4 + wHImgData.data.length-wHImgData.width*4] && colorRGB[1] == wHImgData.data[i*4+wHImgData.data.length-wHImgData.width*4+1] && colorRGB[2] == wHImgData.data[i*4+wHImgData.data.length-wHImgData.width*4+2]) {
-      hitDirection += "d";
+      wallHitDirection += "d";
       break;
     }
   }
@@ -207,7 +208,7 @@ var render = function () {
   ctx.fillRect(0, 0, width, height);
 
   //Draw room picture (room defined in index.html)
-  ctx.drawImage(roomSprites[room], 0, 0)
+  ctx.drawImage(roomSprites[room], 0, 0);
 
   //Special room drawings
   if (room == "r2") {
@@ -332,16 +333,16 @@ var keyPress = function() {
   for(var key in keysDown) {
     var value = Number(key);
 
-    if (value == 37 && !hitDirection.includes("l")) {   //37 = left
+    if (value == 37 && !wallHitDirection.includes("l")) {   //37 = left
       pX = Math.round(pX - speed);
       UDPChan.send(room +",X" + pX);
-    } else if (value == 39 && !hitDirection.includes("r")) {  //39 = right
+    } else if (value == 39 && !wallHitDirection.includes("r")) {  //39 = right
       pX = Math.round(pX + speed);
       UDPChan.send(room +",X" + pX);
-    } else if (value == 40 && !hitDirection.includes("d")) {  //40 = down
+    } else if (value == 40 && !wallHitDirection.includes("d")) {  //40 = down
       pY = Math.round(pY + speed);
       UDPChan.send(room +",Y" + pY);
-    } else if (value == 38 && !hitDirection.includes("u")) {  //38 = up
+    } else if (value == 38 && !wallHitDirection.includes("u")) {  //38 = up
       pY = Math.round(pY - speed);
       UDPChan.send(room +",Y" + pY);
     }
