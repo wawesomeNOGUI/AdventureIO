@@ -283,7 +283,7 @@ var prevRoom = "r1";
 var update = function() {
   prevRoom = room;
 
-  keyPress();
+  //keyPress();
 
   //Check for hitting edge of screen
   if(pX < 0){
@@ -320,9 +320,11 @@ var sendToServerInterval = setInterval(function(){
 }, 40);  // sends updates to server every 40 ms instead of every animation loop
 */
 
-// var keyCheckInterval = setInterval(function() {
-  // keyPress();
-// }, 7)  // 144hz
+var keyCheckInterval = setInterval(function() {
+  for (var i = 0; i < 3; i++) {
+    keyPress();
+  }
+}, 10)
 
 var keyPress = function() {
   checkForPixelPerfectWallHit(hexToRgb(wallColor));
