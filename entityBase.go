@@ -66,7 +66,7 @@ func (e *EntityBase) SetWidth(w float64) {
 }
 
 func (e *EntityBase) GetHeight() float64 {
-	return e.width
+	return e.height
 }
 
 func (e *EntityBase) SetHeight(h float64) {

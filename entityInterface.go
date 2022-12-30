@@ -158,7 +158,7 @@ func WallCheck(e EntityInterface) {
 			continue
 		} 
 		// test for hit 
-		if !e.GetRoom().layout[int(x)][int(e.GetY() + e.GetHeight())] {
+		if !e.GetRoom().layout[int(x)][int(e.GetY() + e.GetHeight()) - 1] {
 			continue
 		}
 
@@ -188,7 +188,7 @@ func WallCheck(e EntityInterface) {
 			continue
 		} 
 		// test for hit 
-		if !e.GetRoom().layout[int(e.GetX() + e.GetWidth())][int(y)] {
+		if !e.GetRoom().layout[int(e.GetX() + e.GetWidth()) - 1][int(y)] {
 			continue
 		}
 
