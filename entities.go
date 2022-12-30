@@ -118,14 +118,81 @@ func (b *Bat) Update(oX, oY float64) {
 	WallCheck:
 	WallCheck(b)
 }
+
 //==================Dragons====================
-/*
-func (e *Entity) initializeDragon() {
-	e.s = 0.15
-	e.behaviorFunc = dragonBehaviorFunc
+type Dragon struct {
+	EntityBase
+	waitCounter int // time delay before allowed to fly towards players and attack again
 }
 
-func dragonBehaviorFunc(e *Entity) {
+var numOfDragons int
+func newDragon(room *Room, x, y float64) (string, *Dragon) {
+	b := Dragon{}
+	b.X = x 
+	b.Y = y
+	b.width = 8
+	b.height = 20
+	b.vX = 0.5
+	b.vY = 0.5
+	b.s = 1.25
+	b.K = "drg"
+	b.room = room
+	b.canChangeRooms = false
 
+	numOfDragons++
+	b.key = fmt.Sprintf("drg%d", numOfBats)
+
+	return b.key, &b
 }
-*/
+
+const drgWaitCounterThreshold = 250
+func (d *Dragon) Update(oX, oY float64) {
+	if d.owner != nil {
+		d.X += oX
+		d.Y += oY
+
+		if d.held != nil {
+			d.held.Update(oX, oY)
+		}
+
+		return
+	}
+
+	prevX := d.X
+	prevY := d.Y
+	d.X += d.vX * d.s
+	d.Y += d.vY * d.s
+
+	if d.held != nil {
+		d.held.Update(d.X-prevX, d.Y-prevY)
+	}
+
+	if d.waitCounter++; d.waitCounter > drgWaitCounterThreshold {
+		d.waitCounter = 0
+		// we can run the non concurrent safe one here cause UpdateEntities() locks the mutex to the map of entities
+		// itemKey, vX, vY := b.room.Entities.nonConcurrentSafeClosestItem(b.key, 20, 100, b.X, b.Y)
+		entityKey, vX, vY := d.room.Entities.nonConcurrentSafeClosestEntity(d.key, 20, 100, d.X, d.Y)		
+
+		if entityKey != "" {
+			d.vX = vX
+			d.vY = vY
+		}
+
+		// fmt.Println(b.vX)
+
+		// Try to pick up an item
+		// b.room.Entities.nonConcurrentSafeTryPickUpItem(b, b.X+2, b.Y+2)
+		gotEntity, _ := d.room.Entities.nonConcurrentSafeTryPickUpEntity(d, d.X+2, d.Y+2)
+		if gotEntity {
+			p, ok := d.held.(*Player)
+			if ok {
+				p.BeingHeld = d.key
+			}
+		}
+	}
+
+	// fmt.Println("flap")
+
+	// WallCheck:
+	WallCheck(d)
+}

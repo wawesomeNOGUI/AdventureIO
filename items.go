@@ -80,12 +80,6 @@ func (c *EntityContainer) isItemHere(self EntityInterface, x, y float64) (bool, 
 				return true, k
 			}
 		}
-
-		// d := math.Sqrt(math.Pow(x - v.GetX(), 2) + math.Pow(y - v.GetY(), 2))
-
-		// if d < v.GetWidth() + v.GetHeight() {
-		// 	return true, k
-		// }
 	}
 
 	return false, ""

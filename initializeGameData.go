@@ -55,6 +55,7 @@ func InitializeEntities(m *sync.Map) {
 	r, _ = m.Load("r5")
 	tmpR = r.(*Room)
 	tmpR.Entities.StoreEntity(newDoorGrate(tmpR, 10, 10))
+	tmpR.Entities.StoreEntity(newDragon(tmpR, 50, 75))
 	m.Store("r5", tmpR)
 
 	/*
