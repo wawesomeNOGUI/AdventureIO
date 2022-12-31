@@ -57,6 +57,10 @@ func defaultRoomUpdate(r *Room) {
 	r.Entities.UpdateEntities()
 }
 
+func respawnRoomUpdate(r *Room) {
+	//
+}
+
 func dragonRoomUpdate(r *Room) {
 	if r.specialVars["dragonBeat"] == false {
 		// close gate when players enter
@@ -69,8 +73,11 @@ func dragonRoomUpdate(r *Room) {
 					doorGrate.SetvY(0)
 					continue
 				}
-				if doorGrate.GetX() != 57 {
+
+				if doorGrate.GetX() < 57 {
 					doorGrate.SetvX(0.25)
+				} else if doorGrate.GetX() > 57 {
+					doorGrate.SetvX(-0.25)
 				}
 		
 				if doorGrate.GetX() == 57 && doorGrate.GetY() != 3 {

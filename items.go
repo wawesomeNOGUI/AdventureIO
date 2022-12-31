@@ -38,6 +38,35 @@ func newDoorGrate(r *Room, x, y float64) (string, *Item) {
 	return newItem("dG", r, x, y, 46, 8)
 }
 
+func (b *Item) doItemHit() {
+	if b.K == "sword" {
+		yes, key := b.room.Entities.isEntityHere(b, b.X, b.Y)
+		if yes {
+			switch z := b.room.Entities.entities[key].(type) {
+			case *Dragon:
+				if z.invincibleCounter > 0 {
+					break
+				} 
+				// here z is a pointer to a Dragon
+				// get vector pointing away from item with length 1
+				x := b.X - z.X
+				y := b.Y - z.Y
+				d := math.Sqrt(x * x + y * y)
+
+				z.vX = -x/d
+				z.vY = -y/d
+				z.s = 5
+				z.waitCounter = 25
+				z.invincibleCounter = dragonInvincibleDelay
+
+				z.health--
+			default:
+				// no match; here z has the same type as v (interface{})
+			}
+		}
+	}
+}
+
 func (b *Item) Update(oX, oY float64) {
 	if b.owner != nil {
 		b.X += oX
@@ -45,6 +74,11 @@ func (b *Item) Update(oX, oY float64) {
 
 		if b.held != nil {
 			b.held.Update(oX, oY)
+		}
+
+		// if the player or entity holding this item is not held by another entity
+		if b.owner.Owner() == nil {
+			b.doItemHit()
 		}
 
 		return

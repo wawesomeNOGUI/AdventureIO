@@ -122,8 +122,10 @@ func (b *Bat) Update(oX, oY float64) {
 //==================Dragons====================
 type Dragon struct {
 	EntityBase
-	playersHeld []Player
+	playersHeld map[string]*Player
+	health int
 	waitCounter int // time delay before allowed to fly towards players and attack again
+	invincibleCounter int //dragon gains invincibility for a short time after being hit 
 }
 
 var numOfDragons int
@@ -139,6 +141,8 @@ func newDragon(room *Room, x, y float64) (string, *Dragon) {
 	b.K = "drg"
 	b.room = room
 	b.canChangeRooms = false
+	b.playersHeld = make(map[string]*Player)
+	b.health = 5
 
 	numOfDragons++
 	b.key = fmt.Sprintf("drg%d", numOfDragons)
@@ -148,6 +152,8 @@ func newDragon(room *Room, x, y float64) (string, *Dragon) {
 
 
 const drgWaitCounterThreshold = 150
+const lungeLength = 30
+const dragonInvincibleDelay = 25
 func (d *Dragon) Update(oX, oY float64) {
 	if d.owner != nil {
 		d.X += oX
@@ -160,17 +166,42 @@ func (d *Dragon) Update(oX, oY float64) {
 		return
 	}
 
+	if d.invincibleCounter > 0 {
+		d.invincibleCounter--
+	}
+
+	if d.health <= 0 {
+		//drop held players
+		for k, v := range d.playersHeld {
+			d.room.Entities.entities[k] = v
+			v.SetOwner(nil)
+			v.SetRoom(d.room)
+			v.BeingHeld = ""
+		}
+
+		d.playersHeld = make(map[string]*Player)
+
+		//then go to respawn room
+		delete(d.room.Entities.entities, d.key)
+		RespawnRoomPtr.Entities.StoreEntity(d.key, d)
+
+		fmt.Println(d.room.Entities.entities)
+	}
+
 	prevX := d.X
 	prevY := d.Y
 	d.X += d.vX * d.s
 	d.Y += d.vY * d.s
 
-	if d.held != nil {
-		d.held.Update(d.X-prevX, d.Y-prevY)
+	if len(d.playersHeld) != 0 {
+		for _, v := range d.playersHeld {
+			v.Update(d.X-prevX, d.Y-prevY)
+		}
 	}
 
 	if d.waitCounter++; d.waitCounter > drgWaitCounterThreshold {
 		d.waitCounter = 0
+		d.s = 3  //so dragon lunges at player 
 		// we can run the non concurrent safe one here cause UpdateEntities() locks the mutex to the map of entities
 		// itemKey, vX, vY := b.room.Entities.nonConcurrentSafeClosestItem(b.key, 20, 100, b.X, b.Y)
 		entityKey, vX, vY := d.room.Entities.nonConcurrentSafeClosestEntity(d.key, []string{"p"}, 20, 100, d.X, d.Y)		
@@ -179,6 +210,8 @@ func (d *Dragon) Update(oX, oY float64) {
 			d.vX = vX
 			d.vY = vY
 		}
+	} else if d.waitCounter == lungeLength {
+		d.s = 1.25
 	}
 
 	yes, key := d.room.Entities.isEntityHere(d, d.X, d.Y)
@@ -189,13 +222,14 @@ func (d *Dragon) Update(oX, oY float64) {
 			if gotEntity {
 				p, ok := d.held.(*Player)
 				if ok {
+					d.playersHeld[p.key] = p
 					p.BeingHeld = d.key
+
+					d.held = nil
 				}
 			}
 		}
 	}
-
-	// fmt.Println("flap")
 
 	// WallCheck:
 	WallCheck(d)

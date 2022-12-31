@@ -5,7 +5,13 @@ import (
 	"github.com/wawesomeNOGUI/adventureIO/roomMapData"
 )
 
+var RespawnRoomPtr *Room
+
 func InitializeRooms(m *sync.Map) {
+	// this is a special room just to store entities waiting to respawn
+	r0key, r0ptr := newRoom("r0", respawnRoomUpdate, nil, nil, nil, nil, nil)
+	RespawnRoomPtr = r0ptr
+
 	r1key, r1ptr := newRoom("r1", defaultRoomUpdate, &roomMapData.R1Layout, nil, nil, nil, nil)
 	r1ptr.wallColor = "#8c58b8"
 
@@ -26,6 +32,7 @@ func InitializeRooms(m *sync.Map) {
 	r4ptr.belowRoom = r5ptr
 	r5ptr.specialVars["dragonBeat"] = false
 
+	m.Store(r0key, r0ptr)
 	m.Store(r1key, r1ptr)
 	m.Store(r2key, r2ptr)
 	m.Store(r3key, r3ptr)

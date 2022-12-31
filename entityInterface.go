@@ -42,12 +42,26 @@ func traverseEntities(e EntityInterface, output map[string]EntityInterface) {
 		traverseEntities(e.Held(), output)
 	}
 
+	d, ok := e.(*Dragon)
+	if ok {
+		for _, v := range d.playersHeld {
+			traverseEntities(v, output)
+		}
+	}
+
 	output[e.Key()] = e
 }
 
 func changeRoom(e EntityInterface, r *Room) {
 	delete(e.GetRoom().Entities.entities, e.Key())
-	e.SetRoom(r)
+	
+	tmpMap := make(map[string]EntityInterface)
+	traverseEntities(e, tmpMap)
+
+	for _, v := range tmpMap {
+		v.SetRoom(r)
+	}
+	
 	r.Entities.StoreEntity(e.Key(), e)
 }
 
@@ -332,6 +346,11 @@ func (c *EntityContainer) isEntityHere(self EntityInterface, x, y float64) (bool
 		if v == self {
 			continue
 		}
+
+		if self.Owner() == v {
+			continue
+		}
+
 		// to not let entities pick up same type as themselves (kinda fun interaction though maybe make an option)
 		if v.GetKind() == self.GetKind() {
 			continue
