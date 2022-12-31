@@ -93,7 +93,7 @@ func (b *Bat) Update(oX, oY float64) {
 
 		// we can run the non concurrent safe one here cause UpdateEntities() locks the mutex to the map of entities
 		// itemKey, vX, vY := b.room.Entities.nonConcurrentSafeClosestItem(b.key, 20, 100, b.X, b.Y)
-		itemKey, vX, vY := b.room.Entities.nonConcurrentSafeClosestEntity(b.key, 20, 100, b.X, b.Y)		
+		itemKey, vX, vY := b.room.Entities.nonConcurrentSafeClosestEntity(b.key, []string{}, 20, 100, b.X, b.Y)		
 
 		if itemKey != "" {
 			b.vX = vX
@@ -104,7 +104,7 @@ func (b *Bat) Update(oX, oY float64) {
 
 		// Try to pick up an item
 		// b.room.Entities.nonConcurrentSafeTryPickUpItem(b, b.X+2, b.Y+2)
-		gotEntity, _ := b.room.Entities.nonConcurrentSafeTryPickUpEntity(b, b.X+2, b.Y+2)
+		gotEntity, _ := b.room.Entities.nonConcurrentSafeTryPickUpEntity(b, b.X, b.Y)
 		if gotEntity {
 			p, ok := b.held.(*Player)
 			if ok {
@@ -122,6 +122,7 @@ func (b *Bat) Update(oX, oY float64) {
 //==================Dragons====================
 type Dragon struct {
 	EntityBase
+	playersHeld []Player
 	waitCounter int // time delay before allowed to fly towards players and attack again
 }
 
@@ -145,7 +146,8 @@ func newDragon(room *Room, x, y float64) (string, *Dragon) {
 	return b.key, &b
 }
 
-const drgWaitCounterThreshold = 250
+
+const drgWaitCounterThreshold = 150
 func (d *Dragon) Update(oX, oY float64) {
 	if d.owner != nil {
 		d.X += oX
@@ -171,17 +173,13 @@ func (d *Dragon) Update(oX, oY float64) {
 		d.waitCounter = 0
 		// we can run the non concurrent safe one here cause UpdateEntities() locks the mutex to the map of entities
 		// itemKey, vX, vY := b.room.Entities.nonConcurrentSafeClosestItem(b.key, 20, 100, b.X, b.Y)
-		entityKey, vX, vY := d.room.Entities.nonConcurrentSafeClosestEntity(d.key, 20, 100, d.X, d.Y)		
+		entityKey, vX, vY := d.room.Entities.nonConcurrentSafeClosestEntity(d.key, []string{"p"}, 20, 100, d.X, d.Y)		
 
 		if entityKey != "" {
 			d.vX = vX
 			d.vY = vY
 		}
 
-		// fmt.Println(b.vX)
-
-		// Try to pick up an item
-		// b.room.Entities.nonConcurrentSafeTryPickUpItem(b, b.X+2, b.Y+2)
 		gotEntity, _ := d.room.Entities.nonConcurrentSafeTryPickUpEntity(d, d.X+2, d.Y+2)
 		if gotEntity {
 			p, ok := d.held.(*Player)

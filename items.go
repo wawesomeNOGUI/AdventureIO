@@ -75,8 +75,9 @@ func (c *EntityContainer) isItemHere(self EntityInterface, x, y float64) (bool, 
 			continue
 		}
 
-		if x >= v.GetX() && x <= v.GetX() + v.GetWidth() {
-			if y >= v.GetY() && y <= v.GetY() + v.GetHeight() {
+		// check for rectangle overlap between two entities
+		if x < v.GetX() + v.GetWidth() && v.GetX() < x + self.GetWidth() {
+			if y < v.GetY() + v.GetHeight() && v.GetY() < y + self.GetHeight() {
 				return true, k
 			}
 		}

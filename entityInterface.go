@@ -323,8 +323,9 @@ func (c *EntityContainer) isEntityHere(self EntityInterface, x, y float64) (bool
 			continue
 		}
 
-		if x >= v.GetX() && x <= v.GetX() + v.GetWidth() {
-			if y >= v.GetY() && y <= v.GetY() + v.GetHeight() {
+		// check for rectangle overlap between two entities
+		if x < v.GetX() + v.GetWidth() && v.GetX() < x + self.GetWidth() {
+			if y < v.GetY() + v.GetHeight() && v.GetY() < y + self.GetHeight() {
 				return true, k
 			}
 		}
@@ -348,7 +349,7 @@ func (c *EntityContainer) nonConcurrentSafeTryPickUpEntity(ref EntityInterface, 
 }
 
 // run the below one for concurrent safe calling
-func (c *EntityContainer) nonConcurrentSafeClosestEntity(self string, closeParam, d, x, y float64) (string, float64, float64) {
+func (c *EntityContainer) nonConcurrentSafeClosestEntity(self string, filter []string, closeParam, d, x, y float64) (string, float64, float64) {
 	var closest string
 	var dX float64
 	var dY float64
@@ -361,6 +362,19 @@ func (c *EntityContainer) nonConcurrentSafeClosestEntity(self string, closeParam
 		if v.GetKind() == c.entities[self].GetKind() {
 			continue
 		}
+
+		if len(filter) == 0 {
+			goto NEXT
+		}
+
+		for _, f := range filter {
+			if v.GetKind() == f {
+				goto NEXT
+			} 		
+		}
+		continue
+		
+		NEXT:
 
 		tmpDX := v.GetX() - x 
 		tmpDY := v.GetY() - y
@@ -388,11 +402,11 @@ func (c *EntityContainer) nonConcurrentSafeClosestEntity(self string, closeParam
 // returns entity key, and normalized vector pointing from x,y to the entity
 // closeParam tells distance when the search should break cause found a close enough entity
 // d is the largest search radius
-func (c *EntityContainer) ClosestEntity(self string, closeParam, d, x, y float64) (string, float64, float64) {
+func (c *EntityContainer) ClosestEntity(self string, filter []string, closeParam, d, x, y float64) (string, float64, float64) {
 	c.mu.Lock()
     defer c.mu.Unlock()
 
-	itemKey, vX, vY := c.nonConcurrentSafeClosestEntity(self, closeParam, d, x, y)
+	itemKey, vX, vY := c.nonConcurrentSafeClosestEntity(self, filter, closeParam, d, x, y)
 
 	return itemKey, vX, vY
 }
