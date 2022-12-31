@@ -258,6 +258,20 @@ func (c *EntityContainer) Entities() map[string]EntityInterface {
 	return tmpMap
 }
 
+func (c *EntityContainer) GetEntitiesByKind(kind string) map[string]EntityInterface {
+	c.mu.Lock()
+    defer c.mu.Unlock()
+
+	tmpMap := make(map[string]EntityInterface)
+	for k, v := range c.entities {
+		if v.GetKind() == kind {
+			tmpMap[k] = v
+		}
+	}
+
+	return tmpMap
+}
+
 // Return map of all player entities currently contained in the EntityContainer
 func (c *EntityContainer) Players() map[string]*Player {
 	c.mu.Lock()

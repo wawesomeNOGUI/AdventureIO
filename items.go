@@ -17,6 +17,7 @@ func newItem(kind string, r *Room, x, y, w, h float64) (string, *Item) {
 	i := Item{}
 	i.X = x 
 	i.Y = y
+	i.s = 1
 	i.width = w
 	i.height = h
 	i.K = kind

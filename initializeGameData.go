@@ -21,9 +21,10 @@ func InitializeRooms(m *sync.Map) {
 	r4ptr.wallColor = "#74b474"
 	r3ptr.belowRoom = r4ptr
 
-	r5key, r5ptr := newRoom("r5", defaultRoomUpdate, &roomMapData.R5Layout, nil, nil, r4ptr, nil)
+	r5key, r5ptr := newRoom("r5", dragonRoomUpdate, &roomMapData.R5Layout, nil, nil, r4ptr, nil)
 	r5ptr.wallColor = "#404040"
 	r4ptr.belowRoom = r5ptr
+	r5ptr.specialVars["dragonBeat"] = false
 
 	m.Store(r1key, r1ptr)
 	m.Store(r2key, r2ptr)

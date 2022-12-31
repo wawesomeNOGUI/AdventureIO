@@ -141,7 +141,7 @@ func newDragon(room *Room, x, y float64) (string, *Dragon) {
 	b.canChangeRooms = false
 
 	numOfDragons++
-	b.key = fmt.Sprintf("drg%d", numOfBats)
+	b.key = fmt.Sprintf("drg%d", numOfDragons)
 
 	return b.key, &b
 }
@@ -179,12 +179,18 @@ func (d *Dragon) Update(oX, oY float64) {
 			d.vX = vX
 			d.vY = vY
 		}
+	}
 
-		gotEntity, _ := d.room.Entities.nonConcurrentSafeTryPickUpEntity(d, d.X+2, d.Y+2)
-		if gotEntity {
-			p, ok := d.held.(*Player)
-			if ok {
-				p.BeingHeld = d.key
+	yes, key := d.room.Entities.isEntityHere(d, d.X, d.Y)
+	if yes {
+		_, ok := d.room.Entities.entities[key].(*Player)
+		if ok {
+			gotEntity, _ := d.room.Entities.nonConcurrentSafeTryPickUpEntity(d, d.X, d.Y)
+			if gotEntity {
+				p, ok := d.held.(*Player)
+				if ok {
+					p.BeingHeld = d.key
+				}
 			}
 		}
 	}

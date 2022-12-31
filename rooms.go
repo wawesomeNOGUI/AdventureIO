@@ -27,10 +27,13 @@ type Room struct {
 	rightRoom *Room
 	aboveRoom *Room
 	belowRoom *Room
+
+	specialVars map[string]interface{}
 }
 
 func newRoom(key string, uF func(*Room), rL *[160][105]bool, l, r, u, d *Room) (string, *Room) {
 	room := Room{}
+	room.roomKey = key
 	room.Entities = EntityContainer{entities: make(map[string]EntityInterface)} 
 	room.updateFunc = uF
 
@@ -45,12 +48,39 @@ func newRoom(key string, uF func(*Room), rL *[160][105]bool, l, r, u, d *Room) (
 	room.aboveRoom = u
 	room.belowRoom = d
 
-	room.roomKey = key
+	room.specialVars = make(map[string]interface{})
 
 	return key, &room
 }
 
 func defaultRoomUpdate(r *Room) {
+	r.Entities.UpdateEntities()
+}
+
+func dragonRoomUpdate(r *Room) {
+	if r.specialVars["dragonBeat"] == false {
+		// close gate when players enter
+		if len(r.Entities.Players()) > 0 {
+			doorGrateMap := r.Entities.GetEntitiesByKind("dG")
+	
+			for _, doorGrate := range doorGrateMap {
+				if doorGrate.GetX() == 57 && doorGrate.GetY() == 3 {
+					doorGrate.SetvX(0)
+					doorGrate.SetvY(0)
+					continue
+				}
+				if doorGrate.GetX() != 57 {
+					doorGrate.SetvX(0.25)
+				}
+		
+				if doorGrate.GetX() == 57 && doorGrate.GetY() != 3 {
+					doorGrate.SetvX(0)
+					doorGrate.SetvY(-0.25)
+				}
+			}	
+		}
+	}
+	
 	r.Entities.UpdateEntities()
 }
 
