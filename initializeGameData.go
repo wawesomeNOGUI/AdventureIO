@@ -31,6 +31,27 @@ func InitializeRooms(m *sync.Map) {
 	r5ptr.wallColor = "#404040"
 	r4ptr.belowRoom = r5ptr
 	r5ptr.specialVars["dragonBeat"] = false
+	
+	r6key, r6ptr := newRoom("r6", defaultRoomUpdate, &roomMapData.R5Layout, nil, r4ptr, nil, nil)
+	r6ptr.wallColor = "#d084c0"
+	r4ptr.leftRoom = r6ptr
+
+	r8key, r8ptr := newRoom("r8", defaultRoomUpdate, &roomMapData.R5Layout, nil, r6ptr, nil, nil)
+	r8ptr.wallColor = "#6c6c6c"
+	r6ptr.leftRoom = r8ptr
+	
+	r9key, r9ptr := newRoom("r9", defaultRoomUpdate, &roomMapData.R5Layout, nil, nil, nil, r8ptr)
+	r9ptr.wallColor = "#6c6c6c"
+	r8ptr.aboveRoom = r9ptr
+
+	r10key, r10ptr := newRoom("r10", castleRoomUpdate, &roomMapData.R5Layout, nil, nil, nil, r9ptr)
+	r10ptr.wallColor = "#000000"
+	r9ptr.aboveRoom = r10ptr
+
+	r11key, r11ptr := newRoom("r11", defaultRoomUpdate, &roomMapData.R5Layout, nil, nil, nil, r10ptr)
+	r11ptr.wallColor = "#000000"
+	r10ptr.aboveRoom = r11ptr
+	
 
 	m.Store(r0key, r0ptr)
 	m.Store(r1key, r1ptr)
@@ -38,6 +59,12 @@ func InitializeRooms(m *sync.Map) {
 	m.Store(r3key, r3ptr)
 	m.Store(r4key, r4ptr)
 	m.Store(r5key, r5ptr)
+	m.Store(r6key, r6ptr)
+	m.Store(r8key, r8ptr)
+	m.Store(r9key, r9ptr)
+	m.Store(r10key, r10ptr)
+	m.Store(r11key, r11ptr)
+
 }
 
 func InitializeEntities(m *sync.Map) {
