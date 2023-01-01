@@ -171,6 +171,8 @@ func (d *Dragon) Update(oX, oY float64) {
 	}
 
 	if d.health <= 0 {
+		d.room.specialVars["dragonBeat"] = true
+
 		//drop held players
 		for k, v := range d.playersHeld {
 			d.room.Entities.entities[k] = v

@@ -86,6 +86,35 @@ func dragonRoomUpdate(r *Room) {
 				}
 			}	
 		}
+	} else {
+		// open gate when dragon defeated
+		if len(r.Entities.Players()) > 0 {
+			doorGrateMap := r.Entities.GetEntitiesByKind("dG")
+	
+			for _, doorGrate := range doorGrateMap {
+				if doorGrate.GetX() == 10 && doorGrate.GetY() == 10 {
+					doorGrate.SetvX(0)
+					doorGrate.SetvY(0)
+					continue
+				}
+
+				if doorGrate.GetX() < 10 {
+					doorGrate.SetvX(0.25)
+				} else if doorGrate.GetX() > 10 {
+					doorGrate.SetvX(-0.25)
+				} else {
+					doorGrate.SetvX(0)
+				}
+				
+				if doorGrate.GetY() > 10 {
+					doorGrate.SetvY(-0.25)
+				} else if doorGrate.GetY() < 10 {
+					doorGrate.SetvY(0.25)
+				} else {
+					doorGrate.SetvY(0)
+				}
+			}	
+		}
 	}
 	
 	r.Entities.UpdateEntities()
