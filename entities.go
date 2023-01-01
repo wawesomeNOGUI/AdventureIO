@@ -177,13 +177,14 @@ func (d *Dragon) Update(oX, oY float64) {
 			v.SetOwner(nil)
 			v.SetRoom(d.room)
 			v.BeingHeld = ""
-		}
 
-		d.playersHeld = make(map[string]*Player)
+			delete(d.playersHeld, k)
+		}
 
 		//then go to respawn room
 		delete(d.room.Entities.entities, d.key)
 		RespawnRoomPtr.Entities.StoreEntity(d.key, d)
+		return
 	}
 
 	prevX := d.X
