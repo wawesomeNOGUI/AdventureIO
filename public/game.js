@@ -100,12 +100,32 @@ var r4 = new Image();
 var r5 = new Image();
     r5.src = "sprites/rooms/r5.gif";
 
+var r6 = new Image();
+    r6.src = "sprites/rooms/r6.gif";
+
+var r8 = new Image();
+    r8.src = "sprites/rooms/r8.gif";
+
+var r9 = new Image();
+    r9.src = "sprites/rooms/r9.gif";
+
+var r10 = new Image();
+    r10.src = "sprites/rooms/r10.gif";
+
+var r11 = new Image();
+    r11.src = "sprites/rooms/r11.gif";
+
 var roomSprites = {
   "r1": r1,
   "r2": r2,
   "r3": r3,
   "r4": r4,
-  "r5": r5
+  "r5": r5,
+  "r6": r6,
+  "r8": r8,
+  "r9": r9,
+  "r10": r10,
+  "r11": r11
 }
 //==========================================================
 
