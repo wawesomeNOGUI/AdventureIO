@@ -285,8 +285,11 @@ var render = function () {
         var x = smoothstep(previousUpdate[key].X, Updates[key].X, t);
         var y = smoothstep(previousUpdate[key].Y, Updates[key].Y, t);
 
-        ctx.drawImage(spriteMap[Updates[key].K], Math.round(x), Math.round(y));
-        // ctx.drawImage(spriteMap[Updates[key].Kind], Updates[key].X, Updates[key].Y);
+        if (Updates[key].K == "dG") {
+          drawColorSprite(ctx, spriteMap[Updates[key].K], wallColor, Math.round(x), Math.round(y));
+        } else {
+          ctx.drawImage(spriteMap[Updates[key].K], Math.round(x), Math.round(y));
+        }
       }
     }
   }
