@@ -178,12 +178,19 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 		msg.Data = msg.Data[roomNumIndex + 1:]
 
-		playerStruct := room.Entities.LoadEntity(playerTag)
+		room.Entities.mu.Lock()
+		defer room.Entities.mu.Unlock()
+		//can use non concurrent safe methods on entities below here
+
+		playerStruct := room.Entities.entities[playerTag]
 		if playerStruct == nil {
 		 	// fmt.Println("Uh oh")
 			return
 		}
-		tmpPlayer := playerStruct.(*Player)  // need to create a temporary copy to edit: https://stackoverflow.com/questions/17438253/accessing-struct-fields-inside-a-map-value-without-copying
+		playerPtr, ok := playerStruct.(*Player)  // need to create a temporary copy to edit: https://stackoverflow.com/questions/17438253/accessing-struct-fields-inside-a-map-value-without-copying
+		if !ok {
+			return
+		}
 
 		if msg.Data[0] == 'X' { //88 = "X"
 			x, err := strconv.ParseFloat(string(msg.Data[1:]), 64)
@@ -194,20 +201,16 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			// Edge of screen
 			if x < 0 {
 				x = 0
-			} else if x > 160 - tmpPlayer.width {
-				x = 160 - tmpPlayer.width
+			} else if x > 160 - playerPtr.width {
+				x = 160 - playerPtr.width
 			}	
 
-			// Move Owned Item (tmpPlayer.held is an EntitiyInterface)
-			if tmpPlayer.held != nil {
-				// tmpPlayer.held.SetX(tmpPlayer.held.GetX() + x - tmpPlayer.X)
-				// *******
-				//might be a race condition if use other functions that need to iterate through items??
-				// *******
-				tmpPlayer.held.Update(x - tmpPlayer.X, 0)
+			// Move Owned Item (playerPtr.held is an EntitiyInterface)
+			if playerPtr.held != nil {
+				playerPtr.held.Update(x - playerPtr.X, 0)
 			}
 			
-			tmpPlayer.X = x
+			playerPtr.X = x
 		} else if msg.Data[0] == 'Y' { //89 = "Y"
 			y, err := strconv.ParseFloat(string(msg.Data[1:]), 64)
 			if err != nil {
@@ -216,20 +219,17 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 			if y < 0 {
 				y = 0
-			} else if y > 105 - tmpPlayer.height {
-				y = 105 - tmpPlayer.height
+			} else if y > 105 - playerPtr.height {
+				y = 105 - playerPtr.height
 			}
 
-			// Move Owned Item (tmpPlayer.held is an EntitiyInterface)
-			if tmpPlayer.held != nil {
-				// tmpPlayer.held.SetY(tmpPlayer.held.GetY() + y - tmpPlayer.Y)
-				tmpPlayer.held.Update(0, y - tmpPlayer.Y)
+			// Move Owned Item (playerPtr.held is an EntitiyInterface)
+			if playerPtr.held != nil {
+				playerPtr.held.Update(0, y - playerPtr.Y)
 			}
 
-			tmpPlayer.Y = y
+			playerPtr.Y = y
 		}
-
-		room.Entities.StoreEntity(playerTag, tmpPlayer)
 	})
 
 	//==============================================================================
@@ -265,12 +265,19 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 		msg.Data = msg.Data[roomNumIndex + 1:]
 
-		playerStruct := room.Entities.LoadEntity(playerTag)
+		room.Entities.mu.Lock()
+		defer room.Entities.mu.Unlock()
+		//can use non concurrent safe methods on entities below here
+
+		playerStruct := room.Entities.entities[playerTag]
 		if playerStruct == nil {
 			// fmt.Println("Uh oh")
 		   return
 	    }
-		tmpPlayer := playerStruct.(*Player)  // need to create a temporary copy to edit: https://stackoverflow.com/questions/17438253/accessing-struct-fields-inside-a-map-value-without-copying
+		playerPtr, ok := playerStruct.(*Player)  // need to create a temporary copy to edit: https://stackoverflow.com/questions/17438253/accessing-struct-fields-inside-a-map-value-without-copying
+		if !ok {
+			return
+		}
 
 		if msg.Data[0] == 'X' { //88 = "X"
 			x, err := strconv.ParseFloat(string(msg.Data[1:]), 64)
@@ -281,17 +288,16 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			// Edge of screen
 			if x < 0 {
 				x = 0
-			} else if x > 160 - tmpPlayer.width {
-				x = 160 - tmpPlayer.width
+			} else if x > 160 - playerPtr.width {
+				x = 160 - playerPtr.width
 			}	
 
-			// Move Owned Item (tmpPlayer.held is an EntitiyInterface)
-			if tmpPlayer.held != nil {
-				// tmpPlayer.held.SetX(tmpPlayer.held.GetX() + x - tmpPlayer.X)
-				tmpPlayer.held.Update(x - tmpPlayer.X, 0)
+			// Move Owned Item (playerPtr.held is an EntitiyInterface)
+			if playerPtr.held != nil {
+				playerPtr.held.Update(x - playerPtr.X, 0)
 			}
 			
-			tmpPlayer.X = x
+			playerPtr.X = x
 		} else if msg.Data[0] == 'Y' { //89 = "Y"
 			y, err := strconv.ParseFloat(string(msg.Data[1:]), 64)
 			if err != nil {
@@ -300,26 +306,25 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 			if y < 0 {
 				y = 0
-			} else if y > 105 - tmpPlayer.height {
-				y = 105 - tmpPlayer.height
+			} else if y > 105 - playerPtr.height {
+				y = 105 - playerPtr.height
 			}
 
-			// Move Owned Item (tmpPlayer.held is an EntitiyInterface)
-			if tmpPlayer.held != nil {
-				// tmpPlayer.held.SetY(tmpPlayer.held.GetY() + y - tmpPlayer.Y)
-				tmpPlayer.held.Update(0, y - tmpPlayer.Y)
+			// Move Owned Item (playerPtr.held is an EntitiyInterface)
+			if playerPtr.held != nil {
+				playerPtr.held.Update(0, y - playerPtr.Y)
 			}
 
-			tmpPlayer.Y = y
+			playerPtr.Y = y
 		} else if msg.Data[0] == 'D' {
 			//dropped item
-			if tmpPlayer.held != nil {
-				room.Entities.StoreEntity(tmpPlayer.held.Key(), tmpPlayer.held)
-			    tmpPlayer.held.SetOwner(nil)
-				tmpPlayer.held.SetRoom(room)
-				tmpPlayer.held = nil
+			if playerPtr.held != nil {
+				room.Entities.entities[playerPtr.held.Key()] = playerPtr.held
+			    playerPtr.held.SetOwner(nil)
+				playerPtr.held.SetRoom(room)
+				playerPtr.held = nil
 			}
-		} else if msg.Data[0] == 'P' && tmpPlayer.held == nil {
+		} else if msg.Data[0] == 'P' && playerPtr.held == nil {
 			// Picked Up Item
 			msg.Data = msg.Data[1:]
 			dataSlice := strings.Split(string(msg.Data), ",")
@@ -337,35 +342,33 @@ func echo(w http.ResponseWriter, r *http.Request) {
 				fmt.Println(err)
 			}
 
-			gotItem, _ := room.Entities.TryPickUpItem(tmpPlayer, hitX, hitY)
+			gotItem, _ := room.Entities.nonConcurrentSafeTryPickUpItem(playerPtr, hitX, hitY)
 
 			if gotItem {
 				if sDir == "" {
 					sDir = "l"
-					tmpPlayer.held.SetX(tmpPlayer.X - 10)
-					tmpPlayer.held.SetY(tmpPlayer.Y)
+					playerPtr.held.SetX(playerPtr.X - 10)
+					playerPtr.held.SetY(playerPtr.Y)
 				}
 				if sDir[0] == 'l' {
-					tmpPlayer.held.SetX(tmpPlayer.held.GetX() - 4)
+					playerPtr.held.SetX(playerPtr.held.GetX() - 4)
 				} else if sDir[0] == 'r' {
-					tmpPlayer.held.SetX(tmpPlayer.held.GetX() + 4)
+					playerPtr.held.SetX(playerPtr.held.GetX() + 4)
 				}
 
 				if strings.Contains(sDir, "u") {
-					tmpPlayer.held.SetY(tmpPlayer.held.GetY() - 4)
+					playerPtr.held.SetY(playerPtr.held.GetY() - 4)
 				} else if strings.Contains(sDir, "d") {
-					tmpPlayer.held.SetY(tmpPlayer.held.GetY() + 4)
+					playerPtr.held.SetY(playerPtr.held.GetY() + 4)
 				}
 
 				// Send this player the item key and offset so they can render it with no delay clientside
-				str := "I" + tmpPlayer.held.Key() + "," + fmt.Sprintf("%.1f", tmpPlayer.held.GetX()-tmpPlayer.X)  + "," + fmt.Sprintf("%.1f", tmpPlayer.held.GetY()-tmpPlayer.Y)
+				str := "I" + playerPtr.held.Key() + "," + fmt.Sprintf("%.1f", playerPtr.held.GetX()-playerPtr.X)  + "," + fmt.Sprintf("%.1f", playerPtr.held.GetY()-playerPtr.Y)
 				reliableChans.SendToPlayer(playerTag, str)
 			}
 		} else if msg.Data[0] == 'U' { // player sent username
 			reliableChans.Broadcast("U" + playerTag + "," + string(msg.Data[1:]))
 		}
-
-		room.Entities.StoreEntity(playerTag, tmpPlayer)
 	})
 
 	//==============================================================================

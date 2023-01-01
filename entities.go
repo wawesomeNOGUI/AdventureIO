@@ -184,8 +184,6 @@ func (d *Dragon) Update(oX, oY float64) {
 		//then go to respawn room
 		delete(d.room.Entities.entities, d.key)
 		RespawnRoomPtr.Entities.StoreEntity(d.key, d)
-
-		fmt.Println(d.room.Entities.entities)
 	}
 
 	prevX := d.X

@@ -34,5 +34,10 @@ func (p *Player) Update(oX, oY float64) {
 		return
 	}
 
+	if p.held != nil {
+		//mostly moved in player connecition in main, but this updates if touching other entities
+		p.held.Update(oX, oY)
+	}
+
 	WallCheck(p)
 }
