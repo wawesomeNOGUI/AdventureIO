@@ -48,7 +48,7 @@ func InitializeRooms(m *sync.Map) {
 	r10ptr.wallColor = "#000000"
 	r9ptr.aboveRoom = r10ptr
 
-	r11key, r11ptr := newRoom("r11", defaultRoomUpdate, &roomMapData.BlankRoomLayout, nil, nil, nil, r10ptr)
+	r11key, r11ptr := newRoom("r11", defaultRoomUpdate, &roomMapData.UpDownLayout, nil, nil, nil, r10ptr)
 	r11ptr.wallColor = "#000000"
 	r10ptr.aboveRoom = r11ptr
 	
