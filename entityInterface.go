@@ -317,13 +317,23 @@ func (c *EntityContainer) SerializeEntities() string {
 		traverseEntities(v, tmpMap)
 	}
 
+	origNums := make(map[string]Vector2)  //Vector2 defined in rooms.go
+	for k, v := range tmpMap {
+		origNums[k] = Vector2{v.GetX(), v.GetY()}
+
+		v.SetX(float64(int(v.GetX())))
+		v.SetY(float64(int(v.GetY())))
+	}
+
 	jsonTemp, err := json.Marshal(tmpMap)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	// fmt.Println(string(jsonTemp))
-
+	for k, v := range tmpMap {		
+		v.SetX(origNums[k].x)
+		v.SetY(origNums[k].y)
+	}
 
 	return string(jsonTemp)
 }
