@@ -19,7 +19,7 @@ func InitializeRooms(m *sync.Map) {
 	r2ptr.wallColor = "#442800"
 	r1ptr.aboveRoom = r2ptr
 
-	r3key, r3ptr := newRoom("r3", castleRoomUpdate, &roomMapData.UpDownLayout, nil, nil, r1ptr, nil)
+	r3key, r3ptr := newRoom("r3", castleRoomUpdate, &roomMapData.CastleLayout, nil, nil, r1ptr, nil)
 	r3ptr.wallColor = "#fcfc68"
 	r1ptr.belowRoom = r3ptr
 
@@ -32,23 +32,23 @@ func InitializeRooms(m *sync.Map) {
 	r4ptr.belowRoom = r5ptr
 	r5ptr.specialVars["dragonBeat"] = false
 	
-	r6key, r6ptr := newRoom("r6", defaultRoomUpdate, &roomMapData.R5Layout, nil, r4ptr, nil, nil)
+	r6key, r6ptr := newRoom("r6", defaultRoomUpdate, &roomMapData.R6Layout, nil, r4ptr, nil, nil)
 	r6ptr.wallColor = "#d084c0"
 	r4ptr.leftRoom = r6ptr
 
-	r8key, r8ptr := newRoom("r8", defaultRoomUpdate, &roomMapData.R5Layout, nil, r6ptr, nil, nil)
+	r8key, r8ptr := newRoom("r8", defaultRoomUpdate, &roomMapData.R8Layout, nil, r6ptr, nil, nil)
 	r8ptr.wallColor = "#6c6c6c"
 	r6ptr.leftRoom = r8ptr
 	
-	r9key, r9ptr := newRoom("r9", defaultRoomUpdate, &roomMapData.R5Layout, nil, nil, nil, r8ptr)
+	r9key, r9ptr := newRoom("r9", defaultRoomUpdate, &roomMapData.UpDownLayout, nil, nil, nil, r8ptr)
 	r9ptr.wallColor = "#6c6c6c"
 	r8ptr.aboveRoom = r9ptr
 
-	r10key, r10ptr := newRoom("r10", castleRoomUpdate, &roomMapData.R5Layout, nil, nil, nil, r9ptr)
+	r10key, r10ptr := newRoom("r10", castleRoomUpdate, &roomMapData.CastleLayout, nil, nil, nil, r9ptr)
 	r10ptr.wallColor = "#000000"
 	r9ptr.aboveRoom = r10ptr
 
-	r11key, r11ptr := newRoom("r11", defaultRoomUpdate, &roomMapData.R5Layout, nil, nil, nil, r10ptr)
+	r11key, r11ptr := newRoom("r11", defaultRoomUpdate, &roomMapData.BlankRoomLayout, nil, nil, nil, r10ptr)
 	r11ptr.wallColor = "#000000"
 	r10ptr.aboveRoom = r11ptr
 	
