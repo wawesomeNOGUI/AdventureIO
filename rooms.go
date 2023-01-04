@@ -61,6 +61,41 @@ func respawnRoomUpdate(r *Room) {
 	//
 }
 
+const fallAsleepThreshold = 500
+func batRoomUpdate(r *Room) {
+	if r.specialVars["batsAwake"] == false {
+		r.Entities.mu.Lock()
+    	defer r.Entities.mu.Unlock()
+
+		r.specialVars["fallAsleepTimer"] = 0  // reset timer
+
+		for _, v := range r.Entities.entities {
+			if v.GetKind() == "bat" {
+				// check if player touches this bat, waking it up
+				yes, _ := r.Entities.isEntityHere(v, []string{"p"}, v.GetX(), v.GetY())
+				if yes {
+					r.specialVars["batsAwake"] = true
+				}
+			} else {
+				v.Update(0, 0)
+			}
+		}
+	} else {
+		if len(r.Entities.Players()) <= 0 {
+			t := r.specialVars["fallAsleepTimer"].(int)
+			t++
+			r.specialVars["fallAsleepTimer"] = t
+
+			if t > fallAsleepThreshold {
+				r.specialVars["batsAwake"] = false
+			}
+		}
+
+		r.Entities.UpdateEntities()
+	}
+}
+
+
 func dragonRoomUpdate(r *Room) {
 	if r.specialVars["dragonBeat"] == false {
 		// close gate when players enter

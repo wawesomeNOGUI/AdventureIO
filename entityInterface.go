@@ -253,8 +253,53 @@ func (c *EntityContainer) DeleteEntity(k string) EntityInterface {
 	c.mu.Lock()
     defer c.mu.Unlock()
 
-	tmpEntity := c.entities[k]
-	delete(c.entities, k)
+	var tmpEntity EntityInterface
+
+	tmpEntity = c.entities[k]
+	if tmpEntity != nil {
+		if tmpEntity.Held() != nil {
+			tmpEntity.Held().SetOwner(nil)
+			c.entities[tmpEntity.Held().Key()] = tmpEntity.Held()
+		}
+
+		delete(c.entities, k)
+		return tmpEntity
+	}
+
+	tmpMap := make(map[string]EntityInterface)
+	for _, v := range c.entities {
+		traverseEntities(v, tmpMap)
+	}
+
+	for heldK, v := range tmpMap {
+		// delete held entity
+		if k == heldK {
+			tmpEntity = v
+			if tmpEntity.Held() != nil {
+				tmpEntity.Held().SetOwner(nil)
+				c.entities[tmpEntity.Held().Key()] = tmpEntity.Held()
+			}
+
+			if v.Owner() != nil {
+				v.Owner().SetHeld(nil)
+			}
+		}
+
+		d, ok := v.(*Dragon)
+		if ok {
+			for dK, p := range d.playersHeld {
+				if dK == k {
+					tmpEntity = p
+					if tmpEntity.Held() != nil {
+						tmpEntity.Held().SetOwner(nil)
+						c.entities[tmpEntity.Held().Key()] = tmpEntity.Held()
+					}
+					delete(d.playersHeld, k)
+					return tmpEntity  // return here cause have to remove player from dragon, but p also included in tmpMap
+				}
+			}
+		}
+	}
 
 	return tmpEntity
 }
@@ -348,7 +393,7 @@ func (c *EntityContainer) UpdateEntities() {
 	}
 }
 
-func (c *EntityContainer) isEntityHere(self EntityInterface, x, y float64) (bool, string) {
+func (c *EntityContainer) isEntityHere(self EntityInterface, filter []string, x, y float64) (bool, string) {
 	// c.mu.Lock()
     // defer c.mu.Unlock()
 
@@ -366,6 +411,19 @@ func (c *EntityContainer) isEntityHere(self EntityInterface, x, y float64) (bool
 			continue
 		}
 
+		if len(filter) == 0 {
+			goto NEXT
+		}
+
+		for _, f := range filter {
+			if v.GetKind() == f {
+				goto NEXT
+			} 		
+		}
+		continue
+		
+		NEXT:
+
 		// check for rectangle overlap between two entities
 		if x < v.GetX() + v.GetWidth() && v.GetX() < x + self.GetWidth() {
 			if y < v.GetY() + v.GetHeight() && v.GetY() < y + self.GetHeight() {
@@ -379,7 +437,7 @@ func (c *EntityContainer) isEntityHere(self EntityInterface, x, y float64) (bool
 
 
 func (c *EntityContainer) nonConcurrentSafeTryPickUpEntity(ref EntityInterface, x, y float64) (bool, string) {
-	entityHere, entityKey := c.isEntityHere(ref, x, y)
+	entityHere, entityKey := c.isEntityHere(ref, []string{}, x, y)
 
 	if entityHere {
 		ref.SetHeld(c.entities[entityKey])

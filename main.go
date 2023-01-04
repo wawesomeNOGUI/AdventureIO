@@ -187,7 +187,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 		 	// fmt.Println("Uh oh")
 			return
 		}
-		playerPtr, ok := playerStruct.(*Player)  // need to create a temporary copy to edit: https://stackoverflow.com/questions/17438253/accessing-struct-fields-inside-a-map-value-without-copying
+		playerPtr, ok := playerStruct.(*Player)  // https://stackoverflow.com/questions/17438253/accessing-struct-fields-inside-a-map-value-without-copying
 		if !ok {
 			return
 		}
@@ -274,7 +274,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			// fmt.Println("Uh oh")
 		   return
 	    }
-		playerPtr, ok := playerStruct.(*Player)  // need to create a temporary copy to edit: https://stackoverflow.com/questions/17438253/accessing-struct-fields-inside-a-map-value-without-copying
+		playerPtr, ok := playerStruct.(*Player)  // https://stackoverflow.com/questions/17438253/accessing-struct-fields-inside-a-map-value-without-copying
 		if !ok {
 			return
 		}
@@ -542,8 +542,8 @@ func main() {
 
 	//Our Public Candidate is declared here cause we're not using a STUN server for discovery
 	//and just hardcoding the open port, and port forwarding webrtc traffic on the router
-	// settingEngine.SetNAT1To1IPs([]string{"162.200.58.171"}, webrtc.ICECandidateTypeHost)
-	settingEngine.SetNAT1To1IPs([]string{}, webrtc.ICECandidateTypeHost)
+	settingEngine.SetNAT1To1IPs([]string{"162.200.58.171"}, webrtc.ICECandidateTypeHost)
+	// settingEngine.SetNAT1To1IPs([]string{}, webrtc.ICECandidateTypeHost)
 
 	// Configure our SettingEngine to use our UDPMux. By default a PeerConnection has
 	// no global state. The API+SettingEngine allows the user to share state between them.

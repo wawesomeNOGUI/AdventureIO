@@ -215,7 +215,7 @@ func (d *Dragon) Update(oX, oY float64) {
 		d.s = 1.25
 	}
 
-	yes, key := d.room.Entities.isEntityHere(d, d.X, d.Y)
+	yes, key := d.room.Entities.isEntityHere(d, []string{"p"}, d.X, d.Y)
 	if yes {
 		_, ok := d.room.Entities.entities[key].(*Player)
 		if ok {

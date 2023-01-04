@@ -40,7 +40,7 @@ func newDoorGrate(r *Room, x, y float64) (string, *Item) {
 
 func (b *Item) doItemHit() {
 	if b.K == "sword" {
-		yes, key := b.room.Entities.isEntityHere(b, b.X, b.Y)
+		yes, key := b.room.Entities.isEntityHere(b, []string{}, b.X, b.Y)
 		if yes {
 			switch z := b.room.Entities.entities[key].(type) {
 			case *Dragon:

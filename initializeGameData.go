@@ -40,8 +40,10 @@ func InitializeRooms(m *sync.Map) {
 	r8ptr.wallColor = "#6c6c6c"
 	r6ptr.leftRoom = r8ptr
 	
-	r9key, r9ptr := newRoom("r9", defaultRoomUpdate, &roomMapData.UpDownLayout, nil, nil, nil, r8ptr)
+	r9key, r9ptr := newRoom("r9", batRoomUpdate, &roomMapData.UpDownLayout, nil, nil, nil, r8ptr)
 	r9ptr.wallColor = "#6c6c6c"
+	r9ptr.specialVars["batsAwake"] = false
+	r9ptr.specialVars["fallAsleepTimer"] = 0
 	r8ptr.aboveRoom = r9ptr
 
 	r10key, r10ptr := newRoom("r10", castleRoomUpdate, &roomMapData.CastleLayout, nil, nil, nil, r9ptr)
@@ -92,6 +94,37 @@ func InitializeEntities(m *sync.Map) {
 	tmpR.Entities.StoreEntity(newDoorGrate(tmpR, 10, 10))
 	tmpR.Entities.StoreEntity(newDragon(tmpR, 50, 75))
 	m.Store("r5", tmpR)
+
+	r, _ = m.Load("r9")
+	tmpR = r.(*Room)
+	tmpR.Entities.StoreEntity(newBat(tmpR, 15, 20))
+	tmpR.Entities.StoreEntity(newBat(tmpR, 40, 20))
+	tmpR.Entities.StoreEntity(newBat(tmpR, 65, 20))
+	tmpR.Entities.StoreEntity(newBat(tmpR, 90, 20))
+	tmpR.Entities.StoreEntity(newBat(tmpR, 115, 20))
+	tmpR.Entities.StoreEntity(newBat(tmpR, 140, 20))
+
+	tmpR.Entities.StoreEntity(newBat(tmpR, 15, 40))
+	tmpR.Entities.StoreEntity(newBat(tmpR, 40, 40))
+	tmpR.Entities.StoreEntity(newBat(tmpR, 65, 40))
+	tmpR.Entities.StoreEntity(newBat(tmpR, 90, 40))
+	tmpR.Entities.StoreEntity(newBat(tmpR, 115, 40))
+	tmpR.Entities.StoreEntity(newBat(tmpR, 140, 40))
+
+	tmpR.Entities.StoreEntity(newBat(tmpR, 15, 60))
+	tmpR.Entities.StoreEntity(newBat(tmpR, 40, 60))
+	tmpR.Entities.StoreEntity(newBat(tmpR, 65, 60))
+	tmpR.Entities.StoreEntity(newBat(tmpR, 90, 60))
+	tmpR.Entities.StoreEntity(newBat(tmpR, 115, 60))
+	tmpR.Entities.StoreEntity(newBat(tmpR, 140, 60))
+
+	// tmpR.Entities.StoreEntity(newBat(tmpR, 15, 80))
+	// tmpR.Entities.StoreEntity(newBat(tmpR, 40, 80))
+	// tmpR.Entities.StoreEntity(newBat(tmpR, 65, 80))
+	// tmpR.Entities.StoreEntity(newBat(tmpR, 90, 80))
+	// tmpR.Entities.StoreEntity(newBat(tmpR, 115, 80))
+	// tmpR.Entities.StoreEntity(newBat(tmpR, 140, 80))
+	m.Store("r9", tmpR)
 
 	/*
 	m.Store(newBat(50, 75))
