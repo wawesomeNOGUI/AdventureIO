@@ -8,6 +8,61 @@ import (
 // all entities implement EntityInterface 
 // this file has monsters, animals, things that move
 
+type LockedDoor struct {
+	EntityBase
+	locked bool
+	unlockKey EntityInterface
+}
+
+var numOfLockedDoors int
+func newLockedDoor(room *Room, x, y float64, unlockKey EntityInterface) (string, *LockedDoor)  {
+	d := LockedDoor{}
+	d.X = x
+	d.Y = y
+	d.width = 46
+	d.height = 8
+	d.vX = 0
+	d.vY = 0
+	d.s = 1
+	d.K = "lD"
+	d.room = room
+	d.canChangeRooms = false
+
+	d.locked = true
+	d.unlockKey = unlockKey
+
+	numOfLockedDoors++
+	d.key = fmt.Sprintf("lD%d", numOfLockedDoors)
+
+	return d.key, &d
+}
+
+func (d *LockedDoor) Update(oX, oY float64) {
+	if d.owner != nil {
+		d.X += oX
+		d.Y += oY
+
+		if d.held != nil {
+			d.held.Update(oX, oY)
+		}
+
+		return
+	}
+
+	if !d.locked {
+		// prevX := d.X
+		// prevY := d.Y
+		d.X += d.vX *d.s
+		d.Y += d.vY *d.s
+	} else {
+		//
+	}
+
+	WallCheck(d)
+}
+
+
+
 //==================Bats=======================
 type Bat struct {
 	EntityBase
@@ -27,7 +82,7 @@ func newBat(room *Room, x, y float64) (string, *Bat) {
 	b.s = 1
 	b.K = "bat"	
 	b.room = room
-	b.canChangeRooms = false
+	b.canChangeRooms = true
 
 	numOfBats++
 	b.key = fmt.Sprintf("bat%d", numOfBats)
@@ -60,11 +115,11 @@ func (b *Bat) Update(oX, oY float64) {
 		b.heldCounter++
 
 		if b.heldCounter > heldCounterThreshold {
-			if b.X < 15 || b.X > 145 {
-				goto WallCheck
-			} else if b.Y < 15 || b.Y > 90 {
-				goto WallCheck
-			}
+			// if b.X < 15 || b.X > 145 {
+			// 	goto WallCheck
+			// } else if b.Y < 15 || b.Y > 90 {
+			// 	goto WallCheck
+			// }
 
 			// fly away from dropped item
 			if b.held.GetX() > b.X && b.vX > 0 {
@@ -115,7 +170,7 @@ func (b *Bat) Update(oX, oY float64) {
 
 	// fmt.Println("flap")
 
-	WallCheck:
+	// WallCheck:
 	WallCheck(b)
 }
 
@@ -159,8 +214,8 @@ func (d *Dragon) Update(oX, oY float64) {
 		d.X += oX
 		d.Y += oY
 
-		if d.held != nil {
-			d.held.Update(oX, oY)
+		for _, v := range d.playersHeld {
+			v.Update(oX, oY)
 		}
 
 		return
@@ -194,10 +249,8 @@ func (d *Dragon) Update(oX, oY float64) {
 	d.X += d.vX * d.s
 	d.Y += d.vY * d.s
 
-	if len(d.playersHeld) != 0 {
-		for _, v := range d.playersHeld {
-			v.Update(d.X-prevX, d.Y-prevY)
-		}
+	for _, v := range d.playersHeld {
+		v.Update(d.X-prevX, d.Y-prevY)
 	}
 
 	if d.waitCounter++; d.waitCounter > drgWaitCounterThreshold {

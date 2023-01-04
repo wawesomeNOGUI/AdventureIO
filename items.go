@@ -38,6 +38,10 @@ func newDoorGrate(r *Room, x, y float64) (string, *Item) {
 	return newItem("dG", r, x, y, 46, 8)
 }
 
+func newKey(r *Room, x, y float64) (string, *Item) {
+	return newItem("key", r, x, y, 10, 5)
+}
+
 func (b *Item) doItemHit() {
 	if b.K == "sword" {
 		yes, key := b.room.Entities.isEntityHere(b, []string{}, b.X, b.Y)
@@ -62,6 +66,16 @@ func (b *Item) doItemHit() {
 				z.health--
 			default:
 				// no match; here z has the same type as v (interface{})
+			}
+		}
+	} else if b.K == "key" {
+		yes, key := b.room.Entities.isEntityHere(b, []string{"lD"}, b.X, b.Y)
+		if yes {
+			z, ok := b.room.Entities.entities[key].(*LockedDoor)
+			if ok {
+				z.locked = false
+				z.vX = 0.5
+				z.vY = 0.5
 			}
 		}
 	}

@@ -60,6 +60,13 @@ func changeRoom(e EntityInterface, r *Room) {
 
 	for _, v := range tmpMap {
 		v.SetRoom(r)
+
+		p, ok := v.(*Player)
+		if ok {
+			reliableChans.SendToPlayer(p.key, p.room.roomKey + "," + p.room.wallColor)
+			reliableChans.SendToPlayer(p.key, fmt.Sprintf("P%f,%f", p.X, p.Y))
+			p.roomChangeChan <- p.room
+		}
 	}
 	
 	r.Entities.StoreEntity(e.Key(), e)
@@ -68,19 +75,12 @@ func changeRoom(e EntityInterface, r *Room) {
 func WallCheck(e EntityInterface) {
 	if e.GetX() <= 0 {
 		if e.GetRoom().leftRoom != nil && e.CanChangeRooms() {
-			changeRoom(e, e.GetRoom().leftRoom)
 			prevX := e.GetX()
 			e.SetX(160 - e.GetWidth() - 1)
+			changeRoom(e, e.GetRoom().leftRoom)
 
 			if e.Held() != nil {
 				e.Held().Update(e.GetX()-prevX, 0)
-			}
-
-			p, ok := e.(*Player)
-			if ok {
-				reliableChans.SendToPlayer(p.key, p.room.roomKey + "," + p.room.wallColor)
-				reliableChans.SendToPlayer(p.key, fmt.Sprintf("P%f,%f", p.X, p.Y))
-				p.roomChangeChan <- p.room
 			}
 		} else {
 			e.SetX(0)
@@ -88,19 +88,12 @@ func WallCheck(e EntityInterface) {
 		}
 	} else if e.GetX() + e.GetWidth() >= 160 {
 		if e.GetRoom().rightRoom != nil && e.CanChangeRooms() {
-			changeRoom(e, e.GetRoom().rightRoom)
 			prevX := e.GetX()
 			e.SetX(1)
+			changeRoom(e, e.GetRoom().rightRoom)
 
 			if e.Held() != nil {
 				e.Held().Update(e.GetX()-prevX, 0)
-			}
-
-			p, ok := e.(*Player)
-			if ok {
-				reliableChans.SendToPlayer(p.key, p.room.roomKey + "," + p.room.wallColor)
-				reliableChans.SendToPlayer(p.key, fmt.Sprintf("P%f,%f", p.X, p.Y))
-				p.roomChangeChan <- p.room
 			}
 		} else {
 			e.SetX(160 - e.GetWidth())
@@ -110,19 +103,12 @@ func WallCheck(e EntityInterface) {
 	
 	if e.GetY() <= 0 {
 		if e.GetRoom().aboveRoom != nil && e.CanChangeRooms() {
-			changeRoom(e, e.GetRoom().aboveRoom)
 			prevY := e.GetY()
 			e.SetY(105 - e.GetHeight() - 1)
+			changeRoom(e, e.GetRoom().aboveRoom)
 
 			if e.Held() != nil {
 				e.Held().Update(0, e.GetY()-prevY)
-			}
-
-			p, ok := e.(*Player)
-			if ok {
-				reliableChans.SendToPlayer(p.key, p.room.roomKey + "," + p.room.wallColor)
-				reliableChans.SendToPlayer(p.key, fmt.Sprintf("P%f,%f", p.X, p.Y))
-				p.roomChangeChan <- p.room
 			}
 		} else {
 			e.SetY(0)
@@ -130,19 +116,12 @@ func WallCheck(e EntityInterface) {
 		}
 	} else if e.GetY() + e.GetHeight() >= 105 {
 		if e.GetRoom().belowRoom != nil && e.CanChangeRooms() {
-			changeRoom(e, e.GetRoom().belowRoom)
 			prevY := e.GetY()
 			e.SetY(1)
+			changeRoom(e, e.GetRoom().belowRoom)
 
 			if e.Held() != nil {
 				e.Held().Update(0, e.GetY()-prevY)
-			}
-
-			p, ok := e.(*Player)
-			if ok {
-				reliableChans.SendToPlayer(p.key, p.room.roomKey + "," + p.room.wallColor)
-				reliableChans.SendToPlayer(p.key, fmt.Sprintf("P%f,%f", p.X, p.Y))
-				p.roomChangeChan <- p.room
 			}
 		} else {
 			e.SetY(105 - e.GetHeight())
