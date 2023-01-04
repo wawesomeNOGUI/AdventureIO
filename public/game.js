@@ -58,12 +58,16 @@ var dragonSpriteMouthOpen = new Image();
 var doorGrateSprite = new Image();
     doorGrateSprite.src = "sprites/doorGrate.gif";
 
+var lockedDoorSprite = new Image();
+    lockedDoorSprite.src = "sprites/lockedDoor.gif"
+
 var spriteMap = {
   "sword": swordSprite,
   "key": keySprite,
   "bat": batSprite0,
   "drg": dragonSprite,
-  "dG": doorGrateSprite
+  "dG": doorGrateSprite,
+  "lD": lockedDoorSprite
 }
 
 var spriteAnimationInterval = setInterval(function(){
