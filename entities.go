@@ -12,6 +12,7 @@ type LockedDoor struct {
 	EntityBase
 	locked bool
 	unlockKey EntityInterface
+	upper bool	// if false than it is at lower door position
 }
 
 var numOfLockedDoors int
@@ -30,6 +31,12 @@ func newLockedDoor(room *Room, x, y float64, unlockKey EntityInterface) (string,
 
 	d.locked = true
 	d.unlockKey = unlockKey
+
+	if y > 105 / 2 {
+		d.upper = false
+	} else {
+		d.upper = true
+	}
 
 	numOfLockedDoors++
 	d.key = fmt.Sprintf("lD%d", numOfLockedDoors)
@@ -55,7 +62,29 @@ func (d *LockedDoor) Update(oX, oY float64) {
 		d.X += d.vX *d.s
 		d.Y += d.vY *d.s
 	} else {
-		//
+		// bounce entities away from door
+		tmpMap := d.room.Entities.getEntitiesHere(d, []string{}, d.X, d.Y)
+		for _, v := range tmpMap {
+			v.SetvX(-v.GetvX())
+			v.SetvY(-v.GetvY())
+
+			prevY := v.GetY()
+
+			if d.upper {
+				v.SetY(v.GetY() + 5)
+			} else {
+				v.SetY(v.GetY() - 5)
+			}
+
+			if v.Held() != nil {
+				v.Held().Update(0, v.GetY()-prevY)
+			}
+
+			p, ok := v.(*Player)
+			if ok {
+				reliableChans.SendToPlayer(p.key, fmt.Sprintf("P%f,%f", p.X, p.Y))
+			}
+		}
 	}
 
 	WallCheck(d)

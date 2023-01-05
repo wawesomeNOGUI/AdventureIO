@@ -414,6 +414,47 @@ func (c *EntityContainer) isEntityHere(self EntityInterface, filter []string, x,
 	return false, ""
 } 
 
+func (c *EntityContainer) getEntitiesHere(self EntityInterface, filter []string, x, y float64) map[string]EntityInterface {
+	tmpMap := make(map[string]EntityInterface)
+
+	for k, v := range c.entities {
+		if v == self {
+			continue
+		}
+
+		if self.Owner() == v {
+			continue
+		}
+
+		// to not let entities pick up same type as themselves (kinda fun interaction though maybe make an option)
+		if v.GetKind() == self.GetKind() {
+			continue
+		}
+
+		if len(filter) == 0 {
+			goto NEXT
+		}
+
+		for _, f := range filter {
+			if v.GetKind() == f {
+				goto NEXT
+			} 		
+		}
+		continue
+		
+		NEXT:
+
+		// check for rectangle overlap between two entities
+		if x < v.GetX() + v.GetWidth() && v.GetX() < x + self.GetWidth() {
+			if y < v.GetY() + v.GetHeight() && v.GetY() < y + self.GetHeight() {
+				tmpMap[k] = v
+			}
+		}
+	}
+
+	return tmpMap
+}
+
 
 func (c *EntityContainer) nonConcurrentSafeTryPickUpEntity(ref EntityInterface, x, y float64) (bool, string) {
 	entityHere, entityKey := c.isEntityHere(ref, []string{}, x, y)

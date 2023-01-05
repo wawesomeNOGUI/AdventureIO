@@ -107,6 +107,31 @@ func (b *Item) Update(oX, oY float64) {
 		b.held.Update(b.X-prevX, b.Y-prevY)
 	}
 
+	if b.K == "dG" {
+		tmpMap := b.room.Entities.getEntitiesHere(b, []string{}, b.X, b.Y)
+		for _, v := range tmpMap {
+			v.SetvX(-v.GetvX())
+			v.SetvY(-v.GetvY())
+
+			prevY = v.GetY()
+
+			// if d.upper {
+				v.SetY(v.GetY() + 5)
+			// } else {
+				// v.SetY(v.GetY() - 5)
+			// }
+
+			if v.Held() != nil {
+				v.Held().Update(0, v.GetY()-prevY)
+			}
+
+			p, ok := v.(*Player)
+			if ok {
+				reliableChans.SendToPlayer(p.key, fmt.Sprintf("P%f,%f", p.X, p.Y))
+			}
+		}
+	}
+
 	// WallCheck:
 	WallCheck(b)
 }
