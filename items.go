@@ -64,6 +64,24 @@ func (b *Item) doItemHit() {
 				z.invincibleCounter = dragonInvincibleDelay
 
 				z.health--
+			case *Bat:
+				//drop held stuff
+				if z.held != nil {
+					z.held.SetOwner(nil)
+					z.held.SetRoom(z.room)
+
+					p, ok := z.held.(*Player)
+					if ok {
+						p.BeingHeld = ""
+					}					
+
+					z.room.Entities.entities[z.held.Key()] = z.held
+					z.held = nil
+				}
+
+				//then go to respawn room
+				delete(z.room.Entities.entities, z.key)
+				RespawnRoomPtr.Entities.StoreEntity(z.key, z)
 			default:
 				// no match; here z has the same type as v (interface{})
 			}
