@@ -53,6 +53,11 @@ func traverseEntities(e EntityInterface, output map[string]EntityInterface) {
 }
 
 func changeRoom(e EntityInterface, r *Room) {
+	// to prevent mutex deadlock
+	if r == e.GetRoom() {
+		return
+	}
+
 	delete(e.GetRoom().Entities.entities, e.Key())
 	
 	tmpMap := make(map[string]EntityInterface)
