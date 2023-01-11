@@ -42,7 +42,7 @@ func newKey(r *Room, x, y float64) (string, *Item) {
 	return newItem("key", r, x, y, 10, 5)
 }
 
-func newTrophy(r *Room, x, y, float64) (string, *Item) {
+func newTrophy(r *Room, x, y float64) (string, *Item) {
 	return newItem("tr", r, x, y, 8, 9)
 }
 
