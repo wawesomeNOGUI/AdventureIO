@@ -61,13 +61,18 @@ var doorGrateSprite = new Image();
 var lockedDoorSprite = new Image();
     lockedDoorSprite.src = "sprites/lockedDoor.gif"
 
+var trophySprite = new Image();
+    trophySprite.src = "sprites/trophy.gif"
+    trophyColor = "#000000";
+
 var spriteMap = {
   "sword": swordSprite,
   "key": keySprite,
   "bat": batSprite0,
   "drg": dragonSprite,
   "dG": doorGrateSprite,
-  "lD": lockedDoorSprite
+  "lD": lockedDoorSprite,
+  "tr": trophySprite
 }
 
 var spriteAnimationInterval = setInterval(function(){
@@ -84,6 +89,8 @@ var spriteAnimationInterval = setInterval(function(){
   } else {
     spriteMap["drg"] = dragonSprite;
   }
+
+  trophyColor = "rgb(" + Math.floor(Math.random()*255) + "," + Math.floor(Math.random()*255) + "," + Math.floor(Math.random()*255) + ")";
   
 }, 250)
 //==========================================================
@@ -303,17 +310,21 @@ var render = function () {
     } else if (previousUpdate.hasOwnProperty(key)) { // its an item or entity
       if (key == ownedItemXYOffset[0]) {
         // Draw local player's item
-        //ctx.drawImage(swordSprite, pX + Math.round(ownedItemXYOffset[0]), pY + Math.round(ownedItemXYOffset[1]));
-        drawColorSprite(ctx, spriteMap[Updates[key].K], "#FF00FF", pX + Math.round(ownedItemXYOffset[1]), pY + Math.round(ownedItemXYOffset[2]));
+        if (Updates[key].K == "tr") {
+          drawColorSprite(ctx, spriteMap[Updates[key].K], trophyColor, pX + Math.round(ownedItemXYOffset[1]), pY + Math.round(ownedItemXYOffset[2]));
+        } else {
+          ctx.drawImage(spriteMap[Updates[key].K], pX + Math.round(ownedItemXYOffset[1]), pY + Math.round(ownedItemXYOffset[2]));
+        }
+        // drawColorSprite(ctx, spriteMap[Updates[key].K], "#FF00FF", pX + Math.round(ownedItemXYOffset[1]), pY + Math.round(ownedItemXYOffset[2]));
       } else {
         var x = smoothstep(previousUpdate[key].X, Updates[key].X, t);
         var y = smoothstep(previousUpdate[key].Y, Updates[key].Y, t);
 
-        // if (Updates[key].K == "dG") {
-        //   drawColorSprite(ctx, spriteMap[Updates[key].K], wallColor, Math.round(x), Math.round(y));
-        // } else {
+        if (Updates[key].K == "tr") {
+           drawColorSprite(ctx, spriteMap[Updates[key].K], trophyColor, Math.round(x), Math.round(y));
+        } else {
           ctx.drawImage(spriteMap[Updates[key].K], Math.round(x), Math.round(y));
-        // }
+        }
       }
     }
   }
