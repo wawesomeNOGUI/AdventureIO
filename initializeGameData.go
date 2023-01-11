@@ -123,20 +123,10 @@ func InitializeEntities(m *sync.Map) {
 
 	tmpR.Entities.StoreEntity(newLockedDoor(tmpR, 57, 3, keyPtr))
 
-	// tmpR.Entities.StoreEntity(newBat(tmpR, 15, 80))
-	// tmpR.Entities.StoreEntity(newBat(tmpR, 40, 80))
-	// tmpR.Entities.StoreEntity(newBat(tmpR, 65, 80))
-	// tmpR.Entities.StoreEntity(newBat(tmpR, 90, 80))
-	// tmpR.Entities.StoreEntity(newBat(tmpR, 115, 80))
-	// tmpR.Entities.StoreEntity(newBat(tmpR, 140, 80))
 	m.Store("r9", tmpR)
 
-	/*
-	m.Store(newBat(50, 75))
-	m.Store(newBat(50, 6))
-	m.Store(newBat(50, 6))
-	tmpB, _ := m.Load("bat2")
-	tmpB.(*Bat).Kind = "key"
-	m.Store("bat2", tmpB)
-	*/
+	r, _ = m.Load("r11")
+	tmpR = r.(*Room)
+	tmpR.Entities.StoreEntity(newTrophy(tmpR, 50, 75))
+	m.Store("r11", tmpR)
 }

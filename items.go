@@ -42,6 +42,10 @@ func newKey(r *Room, x, y float64) (string, *Item) {
 	return newItem("key", r, x, y, 10, 5)
 }
 
+func newTrophy(r *Room, x, y, float64) (string, *Item) {
+	return newItem("tr", r, x, y, 8, 9)
+}
+
 func (b *Item) doItemHit() {
 	if b.K == "sword" {
 		yes, key := b.room.Entities.isEntityHere(b, []string{}, b.X, b.Y)
