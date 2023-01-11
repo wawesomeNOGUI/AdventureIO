@@ -331,8 +331,10 @@ var render = function () {
 
   // If local player not holding item do Item hit detection
   // if item goes inside player, pick up item
-  if (checkForPixelPerfectHit()) {
-    TCPChan.send(room +",P" + hitX + "," + hitY + "," + hitDirection);
+  if (ownedItemXYOffset[0] == "") {
+    if (checkForPixelPerfectHit()) {
+      TCPChan.send(room +",P" + hitX + "," + hitY + "," + hitDirection);
+    }
   }
 }
 
