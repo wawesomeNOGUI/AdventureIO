@@ -451,6 +451,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 }
 
 // Sends current game state unreliably to all players
+// (seemed better to just put in gameLoop because of weird race condition between SerializeEntities and UpdateEntities kept showing up)
 func sendGameStateUnreliableLoop() {
 	for {
 		time.Sleep(time.Millisecond * 50) //50 milliseconds = 20 updates per second
@@ -501,6 +502,13 @@ func gameLoop() {
 			case *Room:
 				// here z is a pointer to a Room
 				z.updateFunc(z)
+
+				// then send updates to players in that room
+				s := z.Entities.SerializeEntities()
+
+				for k, _ := range z.Entities.Players() {
+					unreliableChans.SendToPlayer(k, s)
+				}
 			default:
 				// no match; here z has the same type as v (interface{})
 			}	
@@ -523,7 +531,7 @@ func main() {
 
 	initGameVars()
 
-	go sendGameStateUnreliableLoop()
+	//go sendGameStateUnreliableLoop()
 	go gameLoop()
 
 	// Listen on UDP Port 80, will be used for all WebRTC traffic
@@ -542,8 +550,8 @@ func main() {
 
 	//Our Public Candidate is declared here cause we're not using a STUN server for discovery
 	//and just hardcoding the open port, and port forwarding webrtc traffic on the router
-	// settingEngine.SetNAT1To1IPs([]string{"162.200.58.171"}, webrtc.ICECandidateTypeHost)
-	settingEngine.SetNAT1To1IPs([]string{}, webrtc.ICECandidateTypeHost)
+	settingEngine.SetNAT1To1IPs([]string{"162.200.58.171"}, webrtc.ICECandidateTypeHost)
+	// settingEngine.SetNAT1To1IPs([]string{}, webrtc.ICECandidateTypeHost)
 
 	// Configure our SettingEngine to use our UDPMux. By default a PeerConnection has
 	// no global state. The API+SettingEngine allows the user to share state between them.
