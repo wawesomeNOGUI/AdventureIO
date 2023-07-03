@@ -52,10 +52,10 @@ func traverseEntities(e EntityInterface, output map[string]EntityInterface) {
 	output[e.Key()] = e
 }
 
-func changeRoom(e EntityInterface, r *Room) {
+func changeRoom(e EntityInterface, r *Room) bool {
 	// to prevent mutex deadlock
 	if r == e.GetRoom() {
-		return
+		return false
 	}
 
 	delete(e.GetRoom().Entities.entities, e.Key())
@@ -70,11 +70,12 @@ func changeRoom(e EntityInterface, r *Room) {
 		if ok {
 			reliableChans.SendToPlayer(p.key, p.room.roomKey + "," + p.room.wallColor)
 			reliableChans.SendToPlayer(p.key, fmt.Sprintf("P%f,%f", p.X, p.Y))
-			p.roomChangeChan <- p.room
+			//p.roomChangeChan <- p.room
 		}
 	}
 	
 	r.Entities.StoreEntity(e.Key(), e)
+	return true
 }
 
 func WallCheck(e EntityInterface) {
@@ -87,6 +88,7 @@ func WallCheck(e EntityInterface) {
 			if e.Held() != nil {
 				e.Held().Update(e.GetX()-prevX, 0)
 			}
+			return
 		} else {
 			e.SetX(0)
 			e.SetvX(-e.GetvX())
@@ -100,6 +102,7 @@ func WallCheck(e EntityInterface) {
 			if e.Held() != nil {
 				e.Held().Update(e.GetX()-prevX, 0)
 			}
+			return
 		} else {
 			e.SetX(160 - e.GetWidth())
 			e.SetvX(-e.GetvX())
@@ -115,6 +118,7 @@ func WallCheck(e EntityInterface) {
 			if e.Held() != nil {
 				e.Held().Update(0, e.GetY()-prevY)
 			}
+			return
 		} else {
 			e.SetY(0)
 			e.SetvY(-e.GetvY())
@@ -128,6 +132,7 @@ func WallCheck(e EntityInterface) {
 			if e.Held() != nil {
 				e.Held().Update(0, e.GetY()-prevY)
 			}
+			return
 		} else {
 			e.SetY(105 - e.GetHeight())
 			e.SetvY(-e.GetvY())

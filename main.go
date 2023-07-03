@@ -46,18 +46,20 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 	//===========This Player's Variables===================
 	var playerTag string
+	var playerPtr *Player
 	var room *Room
+	// var pRoomMutex sync.Mutex
 
-	// start player in default room
-	v, ok := Rooms.Load("r1")
-	if !ok {
-		fmt.Println("Couldn't find room")
-	}
-	room = v.(*Room)
+	defer func() {
+		playerPtr.updatePending<-true  //request entities update block for this player
 
-	var pRoomMutex sync.Mutex
+		// will only be sent on when room Entities mutex is locked and it is this player's turn to update
+		<-playerPtr.canUpdate
 
-	defer room.Entities.DeleteEntity(playerTag) 
+		//send to let entity updates continue
+		defer func() { playerPtr.updateDone <- true }()
+		playerPtr.room.Entities.DeleteEntity(playerTag) 
+	}()
 
 	// lets UDP chan onOpen and reliable chan onOpen know that the player has been fully setup in the OnICEConnectionStateChange
 	playerReady := make(chan bool)
@@ -107,20 +109,29 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			playerTag = strconv.Itoa(NumberOfPlayers)
 			fmt.Println(playerTag)
 
-			tmpPlayer := newPlayer(playerTag, 50, 50)
-			tmpPlayer.room = room
-			//Store a pointer to a Player Struct in the default room
-			room.Entities.StoreEntity(playerTag, tmpPlayer)
+			playerPtr = newPlayer(playerTag, 50, 50)
 
-			go func() {
-				for {
-					// room = <-tmpPlayer.roomChangeChan //WallCheck will first set room to nil so player can't move while changing rooms
-					tmp := <-tmpPlayer.roomChangeChan 
-					pRoomMutex.Lock()
-					room = tmp
-					pRoomMutex.Unlock()
-				}
-			}()
+			// start player in default room
+			v, ok := Rooms.Load("r1")
+			if !ok {
+				fmt.Println("Couldn't find room")
+			}
+			room = v.(*Room)
+
+			playerPtr.room = room
+		
+			//Store a pointer to a Player Struct in the default room
+			room.Entities.StoreEntity(playerTag, playerPtr)
+
+			// go func() {
+			// 	for {
+			// 		// room = <-tmpPlayer.roomChangeChan //WallCheck will first set room to nil so player can't move while changing rooms
+			// 		tmp := <-tmpPlayer.roomChangeChan 
+			// 		pRoomMutex.Lock()
+			// 		room = tmp
+			// 		pRoomMutex.Unlock()
+			// 	}
+			// }()
 
 			// send two playerreadies, one for each datachannel we're opening
 			playerReady <- true
@@ -128,7 +139,14 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 			fmt.Println("stored player")
 		} else if connectionState == webrtc.ICEConnectionStateDisconnected || connectionState == webrtc.ICEConnectionStateClosed {
-			room.Entities.DeleteEntity(playerTag)
+			playerPtr.updatePending<-true  //request entities update block for this player
+
+			// will only be sent on when room Entities mutex is locked and it is this player's turn to update
+			<-playerPtr.canUpdate
+
+			//send to let entity updates continue
+			defer func() { playerPtr.updateDone <- true }()
+			playerPtr.room.Entities.DeleteEntity(playerTag) 
 			fmt.Println("Deleted Player")
 
 			reliableChans.DeletePlayerChan(playerTag)
@@ -164,35 +182,34 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 	// Register text message handling
 	dataChannel.OnMessage(func(msg webrtc.DataChannelMessage) {
-		pRoomMutex.Lock()
-		defer pRoomMutex.Unlock()
+		playerPtr.updatePending<-true  //request entities update block for this player
+
+		// will only be sent on when room Entities mutex is locked and it is this player's turn to update
+		<-playerPtr.canUpdate
+		// playerPtr.room.Entities.mu.Lock()
+		// defer playerPtr.room.Entities.mu.Unlock()
+
+		//send to let entity updates continue
+		defer func() { playerPtr.updateDone <- true }()
+		
+		//can use non concurrent safe methods on entities below here
 
 		roomNumIndex := strings.Index(string(msg.Data), ",")
 		if roomNumIndex == -1 {
 			return
 		}
 		getRoomFromMsg := string(msg.Data[:roomNumIndex])
-		if getRoomFromMsg != room.roomKey {
+		if getRoomFromMsg != playerPtr.room.roomKey  {
 			return
 		}
 
 		msg.Data = msg.Data[roomNumIndex + 1:]
 
-		room.Entities.mu.Lock()
-		defer room.Entities.mu.Unlock()
-		//can use non concurrent safe methods on entities below here
-
-		playerStruct := room.Entities.entities[playerTag]
-		if playerStruct == nil {
-		 	// fmt.Println("Uh oh")
-			return
-		}
-		playerPtr, ok := playerStruct.(*Player)  // https://stackoverflow.com/questions/17438253/accessing-struct-fields-inside-a-map-value-without-copying
-		if !ok {
-			return
-		}
-
 		if msg.Data[0] == 'X' { //88 = "X"
+			if playerPtr.owner != nil {
+				return
+			}
+
 			x, err := strconv.ParseFloat(string(msg.Data[1:]), 64)
 			if err != nil {
 				fmt.Println(err)
@@ -211,7 +228,11 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			}
 			
 			playerPtr.X = x
-		} else if msg.Data[0] == 'Y' { //89 = "Y"
+		} else if msg.Data[0] == 'Y' { //89 = "Y"		
+			if playerPtr.owner != nil {
+				return
+			}
+
 			y, err := strconv.ParseFloat(string(msg.Data[1:]), 64)
 			if err != nil {
 				fmt.Println(err)
@@ -250,36 +271,34 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	// Register message handling (Data all served as a bytes slice []byte)
 	// for user controls
 	reliableChannel.OnMessage(func(msg webrtc.DataChannelMessage) {
-		// fmt.Printf("Message from DataChannel '%s': '%s'\n", reliableChannel.Label(), string(msg.Data))
-		pRoomMutex.Lock()
-		defer pRoomMutex.Unlock()
+		playerPtr.updatePending<-true  //request entities update block for this player
+
+		// will only be sent on when room Entities mutex is locked and it is this player's turn to update
+		<-playerPtr.canUpdate
+		// playerPtr.room.Entities.mu.Lock()
+		// defer playerPtr.room.Entities.mu.Unlock()
+
+		//send to let entity updates continue
+		defer func() { playerPtr.updateDone <- true }()
+		
+		//can use non concurrent safe methods on entities below here
 
 		roomNumIndex := strings.Index(string(msg.Data), ",")
 		if roomNumIndex == -1 {
 			return
 		}
 		getRoomFromMsg := string(msg.Data[:roomNumIndex])
-		if getRoomFromMsg != room.roomKey {
+		if getRoomFromMsg != playerPtr.room.roomKey {
 			return
 		}
 
 		msg.Data = msg.Data[roomNumIndex + 1:]
 
-		room.Entities.mu.Lock()
-		defer room.Entities.mu.Unlock()
-		//can use non concurrent safe methods on entities below here
-
-		playerStruct := room.Entities.entities[playerTag]
-		if playerStruct == nil {
-			// fmt.Println("Uh oh")
-		   return
-	    }
-		playerPtr, ok := playerStruct.(*Player)  // https://stackoverflow.com/questions/17438253/accessing-struct-fields-inside-a-map-value-without-copying
-		if !ok {
-			return
-		}
-
 		if msg.Data[0] == 'X' { //88 = "X"
+			if playerPtr.owner != nil {
+				return
+			}
+
 			x, err := strconv.ParseFloat(string(msg.Data[1:]), 64)
 			if err != nil {
 				fmt.Println(err)
@@ -299,6 +318,10 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			
 			playerPtr.X = x
 		} else if msg.Data[0] == 'Y' { //89 = "Y"
+			if playerPtr.owner != nil {
+				return
+			}
+
 			y, err := strconv.ParseFloat(string(msg.Data[1:]), 64)
 			if err != nil {
 				fmt.Println(err)
@@ -319,7 +342,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 		} else if msg.Data[0] == 'D' {
 			//dropped item
 			if playerPtr.held != nil {
-				room.Entities.entities[playerPtr.held.Key()] = playerPtr.held
+				playerPtr.room.Entities.entities[playerPtr.held.Key()] = playerPtr.held
 			    playerPtr.held.SetOwner(nil)
 				playerPtr.held.SetRoom(room)
 				playerPtr.held = nil
@@ -342,7 +365,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 				fmt.Println(err)
 			}
 
-			gotItem, _ := room.Entities.nonConcurrentSafeTryPickUpItem(playerPtr, hitX, hitY)
+			gotItem, _ := playerPtr.room.Entities.nonConcurrentSafeTryPickUpItem(playerPtr, hitX, hitY)
 
 			if gotItem {
 				if sDir == "" {
@@ -459,12 +482,13 @@ func sendGameStateUnreliableLoop() {
 		Rooms.Range(func(rk, rv interface{}) bool {
 			switch z := rv.(type) {
 			case *Room:
-				// here z is a pointer to a Room
-				s := z.Entities.SerializeEntities()
+				z.sendGameStateUnreliableChan <- true // let room update entities
+				// // here z is a pointer to a Room
+				// s := z.Entities.SerializeEntities()
 
-				for k, _ := range z.Entities.Players() {
-					unreliableChans.SendToPlayer(k, s)
-				}
+				// for k, _ := range z.Entities.Players() {
+				// 	unreliableChans.SendToPlayer(k, s)
+				// }
 
 			default:
 				// no match; here z has the same type as v (interface{})
@@ -500,15 +524,16 @@ func gameLoop() {
 		Rooms.Range(func(k, v interface{}) bool {
 			switch z := v.(type) {
 			case *Room:
-				// here z is a pointer to a Room
-				z.updateFunc(z)
+				z.updateEntitiesChan <- true // let room update entities
+				// // here z is a pointer to a Room
+				// z.updateFunc(z)
 
-				// then send updates to players in that room
-				s := z.Entities.SerializeEntities()
+				// // then send updates to players in that room
+				// s := z.Entities.SerializeEntities()
 
-				for k, _ := range z.Entities.Players() {
-					unreliableChans.SendToPlayer(k, s)
-				}
+				// for k, _ := range z.Entities.Players() {
+				// 	unreliableChans.SendToPlayer(k, s)
+				// }
 			default:
 				// no match; here z has the same type as v (interface{})
 			}	
@@ -531,7 +556,7 @@ func main() {
 
 	initGameVars()
 
-	//go sendGameStateUnreliableLoop()
+	go sendGameStateUnreliableLoop()
 	go gameLoop()
 
 	// Listen on UDP Port 80, will be used for all WebRTC traffic

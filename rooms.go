@@ -16,6 +16,9 @@ type Room struct {
 
 	Entities EntityContainer
 	updateFunc func(*Room)
+	updateLoop func(*Room)
+	updateEntitiesChan chan bool
+	sendGameStateUnreliableChan chan bool
 	// leftX float64 // simple rectangle room bounds
 	// rightX float64
 	// upperY float64
@@ -36,6 +39,9 @@ func newRoom(key string, uF func(*Room), rL *[160][105]bool, l, r, u, d *Room) (
 	room.roomKey = key
 	room.Entities = EntityContainer{entities: make(map[string]EntityInterface)} 
 	room.updateFunc = uF
+	room.updateLoop = roomUpdateLoop
+	room.updateEntitiesChan = make(chan bool)
+	room.sendGameStateUnreliableChan = make(chan bool)
 
 	// room.leftX = lX
 	// room.rightX = rX
@@ -50,7 +56,36 @@ func newRoom(key string, uF func(*Room), rL *[160][105]bool, l, r, u, d *Room) (
 
 	room.specialVars = make(map[string]interface{})
 
+	go room.updateLoop(&room)
+
 	return key, &room
+}
+
+func roomUpdateLoop(r *Room) {
+	for {
+		// check for if it's time to update entities or send game state
+		select {
+		case <-r.updateEntitiesChan:
+			r.updateFunc(r)
+		case <-r.sendGameStateUnreliableChan:
+			s := r.Entities.SerializeEntities()
+
+			for k, _ := range r.Entities.Players() {
+				unreliableChans.SendToPlayer(k, s)
+			}
+		default:
+		}
+
+		// check if any players have updates
+		for _, p := range r.Entities.Players() {
+			select {
+			case <-p.updatePending:
+				p.canUpdate <- true
+				<-p.updateDone	//wait for player goroutine to finish updates
+			default:
+			}
+		}
+	}
 }
 
 func defaultRoomUpdate(r *Room) {

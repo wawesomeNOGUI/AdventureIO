@@ -6,6 +6,9 @@ type Player struct {
 	EntityBase
 	BeingHeld string
 	roomChangeChan chan *Room
+	canUpdate chan bool
+	updateDone chan bool
+	updatePending chan bool
 }
 
 func newPlayer(tag string, x, y float64) *Player {
@@ -18,11 +21,14 @@ func newPlayer(tag string, x, y float64) *Player {
 	p.key = tag
 	p.canChangeRooms = true
 	p.roomChangeChan = make(chan *Room)
+	p.canUpdate = make(chan bool)
+	p.updateDone = make(chan bool)
+	p.updatePending = make(chan bool)
 
 	return &p
 }
 
-func (p *Player) Update(oX, oY float64) {
+func (p *Player) Update(oX, oY float64) {		
 	if p.owner != nil {
 		p.X += oX
 		p.Y += oY
