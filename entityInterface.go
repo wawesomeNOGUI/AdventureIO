@@ -79,16 +79,17 @@ func changeRoom(e EntityInterface, r *Room) bool {
 }
 
 func WallCheck(e EntityInterface) {
+	var changedRoom bool
+
 	if e.GetX() <= 0 {
 		if e.GetRoom().leftRoom != nil && e.CanChangeRooms() {
 			prevX := e.GetX()
 			e.SetX(160 - e.GetWidth() - 1)
-			changeRoom(e, e.GetRoom().leftRoom)
+			changedRoom = changeRoom(e, e.GetRoom().leftRoom)
 
 			if e.Held() != nil {
 				e.Held().Update(e.GetX()-prevX, 0)
 			}
-			return
 		} else {
 			e.SetX(0)
 			e.SetvX(-e.GetvX())
@@ -97,12 +98,11 @@ func WallCheck(e EntityInterface) {
 		if e.GetRoom().rightRoom != nil && e.CanChangeRooms() {
 			prevX := e.GetX()
 			e.SetX(1)
-			changeRoom(e, e.GetRoom().rightRoom)
+			changedRoom = changeRoom(e, e.GetRoom().rightRoom)
 
 			if e.Held() != nil {
 				e.Held().Update(e.GetX()-prevX, 0)
 			}
-			return
 		} else {
 			e.SetX(160 - e.GetWidth())
 			e.SetvX(-e.GetvX())
@@ -113,12 +113,11 @@ func WallCheck(e EntityInterface) {
 		if e.GetRoom().aboveRoom != nil && e.CanChangeRooms() {
 			prevY := e.GetY()
 			e.SetY(105 - e.GetHeight() - 1)
-			changeRoom(e, e.GetRoom().aboveRoom)
+			changedRoom = changeRoom(e, e.GetRoom().aboveRoom)
 
 			if e.Held() != nil {
 				e.Held().Update(0, e.GetY()-prevY)
 			}
-			return
 		} else {
 			e.SetY(0)
 			e.SetvY(-e.GetvY())
@@ -127,16 +126,19 @@ func WallCheck(e EntityInterface) {
 		if e.GetRoom().belowRoom != nil && e.CanChangeRooms() {
 			prevY := e.GetY()
 			e.SetY(1)
-			changeRoom(e, e.GetRoom().belowRoom)
+			changedRoom = changeRoom(e, e.GetRoom().belowRoom)
 
 			if e.Held() != nil {
 				e.Held().Update(0, e.GetY()-prevY)
 			}
-			return
 		} else {
 			e.SetY(105 - e.GetHeight())
 			e.SetvY(-e.GetvY())
 		}
+	}
+
+	if changedRoom {
+		return
 	}
 
 	wallHit := false

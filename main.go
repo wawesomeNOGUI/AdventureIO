@@ -186,8 +186,6 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 		// will only be sent on when room Entities mutex is locked and it is this player's turn to update
 		<-playerPtr.canUpdate
-		// playerPtr.room.Entities.mu.Lock()
-		// defer playerPtr.room.Entities.mu.Unlock()
 
 		//send to let entity updates continue
 		defer func() { playerPtr.updateDone <- true }()
@@ -275,8 +273,6 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 		// will only be sent on when room Entities mutex is locked and it is this player's turn to update
 		<-playerPtr.canUpdate
-		// playerPtr.room.Entities.mu.Lock()
-		// defer playerPtr.room.Entities.mu.Unlock()
 
 		//send to let entity updates continue
 		defer func() { playerPtr.updateDone <- true }()

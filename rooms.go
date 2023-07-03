@@ -80,8 +80,10 @@ func roomUpdateLoop(r *Room) {
 		for _, p := range r.Entities.Players() {
 			select {
 			case <-p.updatePending:
+				r.Entities.mu.Lock()
 				p.canUpdate <- true
 				<-p.updateDone	//wait for player goroutine to finish updates
+				r.Entities.mu.Unlock()
 			default:
 			}
 		}
