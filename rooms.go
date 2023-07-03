@@ -229,7 +229,7 @@ func castleRoomUpdate(r *Room) {
 				if ok {
 					reliableChans.SendToPlayer(p.key, p.room.roomKey + "," + p.room.wallColor)
 					reliableChans.SendToPlayer(p.key, fmt.Sprintf("P%f,%f", p.X, p.Y))
-					p.roomChangeChan <- p.room
+					//p.roomChangeChan <- p.room
 				}
 			} else {
 				v.SetY(51)
