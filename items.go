@@ -155,7 +155,7 @@ func (b *Item) Update(oX, oY float64) {
 	}
 
 	// WallCheck:
-	WallCheck(b)
+	wallCheck(b)
 }
 
 func (c *EntityContainer) isItemHere(self EntityInterface, x, y float64) (bool, string) {

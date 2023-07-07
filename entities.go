@@ -87,7 +87,7 @@ func (d *LockedDoor) Update(oX, oY float64) {
 		}
 	}
 
-	WallCheck(d)
+	wallCheck(d)
 }
 
 
@@ -200,7 +200,7 @@ func (b *Bat) Update(oX, oY float64) {
 	// fmt.Println("flap")
 
 	// WallCheck:
-	WallCheck(b)
+	wallCheck(b)
 }
 
 //==================Dragons====================
@@ -315,5 +315,5 @@ func (d *Dragon) Update(oX, oY float64) {
 	}
 
 	// WallCheck:
-	WallCheck(d)
+	wallCheck(d)
 }

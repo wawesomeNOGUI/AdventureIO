@@ -51,13 +51,6 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	// var pRoomMutex sync.Mutex
 
 	defer func() {
-		playerPtr.updatePending<-true  //request entities update block for this player
-
-		// will only be sent on when room Entities mutex is locked and it is this player's turn to update
-		<-playerPtr.canUpdate
-
-		//send to let entity updates continue
-		defer func() { playerPtr.updateDone <- true }()
 		playerPtr.room.Entities.DeleteEntity(playerTag) 
 	}()
 
@@ -139,13 +132,6 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 			fmt.Println("stored player")
 		} else if connectionState == webrtc.ICEConnectionStateDisconnected || connectionState == webrtc.ICEConnectionStateClosed {
-			playerPtr.updatePending<-true  //request entities update block for this player
-
-			// will only be sent on when room Entities mutex is locked and it is this player's turn to update
-			<-playerPtr.canUpdate
-
-			//send to let entity updates continue
-			defer func() { playerPtr.updateDone <- true }()
 			playerPtr.room.Entities.DeleteEntity(playerTag) 
 			fmt.Println("Deleted Player")
 
@@ -182,13 +168,11 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 	// Register text message handling
 	dataChannel.OnMessage(func(msg webrtc.DataChannelMessage) {
-		playerPtr.updatePending<-true  //request entities update block for this player
+		playerPtr.mu.Lock()
+		defer playerPtr.mu.Unlock()
 
-		// will only be sent on when room Entities mutex is locked and it is this player's turn to update
-		<-playerPtr.canUpdate
-
-		//send to let entity updates continue
-		defer func() { playerPtr.updateDone <- true }()
+		playerPtr.room.Entities.mu.Lock()
+		defer playerPtr.room.Entities.mu.Unlock()
 		
 		//can use non concurrent safe methods on entities below here
 
@@ -269,13 +253,11 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	// Register message handling (Data all served as a bytes slice []byte)
 	// for user controls
 	reliableChannel.OnMessage(func(msg webrtc.DataChannelMessage) {
-		playerPtr.updatePending<-true  //request entities update block for this player
+		playerPtr.mu.Lock()
+		defer playerPtr.mu.Unlock()
 
-		// will only be sent on when room Entities mutex is locked and it is this player's turn to update
-		<-playerPtr.canUpdate
-
-		//send to let entity updates continue
-		defer func() { playerPtr.updateDone <- true }()
+		playerPtr.room.Entities.mu.Lock()
+		defer playerPtr.room.Entities.mu.Unlock()
 		
 		//can use non concurrent safe methods on entities below here
 
@@ -478,13 +460,13 @@ func sendGameStateUnreliableLoop() {
 		Rooms.Range(func(rk, rv interface{}) bool {
 			switch z := rv.(type) {
 			case *Room:
-				z.sendGameStateUnreliableChan <- true // let room update entities
+				//z.sendGameStateUnreliableChan <- true // let room update entities
 				// // here z is a pointer to a Room
-				// s := z.Entities.SerializeEntities()
+				s := z.Entities.SerializeEntities()
 
-				// for k, _ := range z.Entities.Players() {
-				// 	unreliableChans.SendToPlayer(k, s)
-				// }
+				for k, _ := range z.Entities.Players() {
+					unreliableChans.SendToPlayer(k, s)
+				}
 
 			default:
 				// no match; here z has the same type as v (interface{})
@@ -520,9 +502,9 @@ func gameLoop() {
 		Rooms.Range(func(k, v interface{}) bool {
 			switch z := v.(type) {
 			case *Room:
-				z.updateEntitiesChan <- true // let room update entities
+				//z.updateEntitiesChan <- true // let room update entities
 				// // here z is a pointer to a Room
-				// z.updateFunc(z)
+				z.updateFunc(z)
 
 				// // then send updates to players in that room
 				// s := z.Entities.SerializeEntities()
@@ -537,6 +519,22 @@ func gameLoop() {
 		})
 	}
 }
+
+//var playerUpdatePendingChan chan *Player = make(chan *Player)
+
+// func handlePlayerUpdatesLoop() {
+// 	// playerUpdatePendingChan := make(chan *Player)
+
+// 	for {
+// 		select {
+// 		case p := <-playerUpdatePendingChan:
+// 			p.room.Entities.mu.Lock()
+// 			p.canUpdate <- true
+// 			<-p.updateDone	//wait for player goroutine to finish updates
+// 			p.room.Entities.mu.Unlock()
+// 		}
+// 	}
+// }
 
 func main() {
 	/*

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	//"time"
 )
 
 type Vector2 struct {
@@ -56,7 +57,7 @@ func newRoom(key string, uF func(*Room), rL *[160][105]bool, l, r, u, d *Room) (
 
 	room.specialVars = make(map[string]interface{})
 
-	go room.updateLoop(&room)
+	//go room.updateLoop(&room)
 
 	return key, &room
 }
@@ -73,19 +74,6 @@ func roomUpdateLoop(r *Room) {
 			for k, _ := range r.Entities.Players() {
 				unreliableChans.SendToPlayer(k, s)
 			}
-		default:
-		}
-
-		// check if any players have updates
-		for _, p := range r.Entities.Players() {
-			select {
-			case <-p.updatePending:
-				r.Entities.mu.Lock()
-				p.canUpdate <- true
-				<-p.updateDone	//wait for player goroutine to finish updates
-				r.Entities.mu.Unlock()
-			default:
-			}
 		}
 	}
 }
@@ -101,6 +89,12 @@ func respawnRoomUpdate(r *Room) {
 const fallAsleepThreshold = 500
 func batRoomUpdate(r *Room) {
 	if r.specialVars["batsAwake"] == false {
+		// prevent player goroutines from sending updates updating
+		for _, p := range r.Entities.Players() {
+			p.mu.Lock()
+			defer p.mu.Unlock()
+		}
+
 		r.Entities.mu.Lock()
     	defer r.Entities.mu.Unlock()
 
@@ -134,10 +128,15 @@ func batRoomUpdate(r *Room) {
 
 
 func dragonRoomUpdate(r *Room) {
+	playersPresent := len(r.Entities.Players())
+	doorGrateMap := r.Entities.GetEntitiesByKind("dG")
+
+	r.Entities.mu.Lock()
+
 	if r.specialVars["dragonBeat"] == false {
 		// close gate when players enter
-		if len(r.Entities.Players()) > 0 {
-			doorGrateMap := r.Entities.GetEntitiesByKind("dG")
+		if playersPresent > 0 {
+			
 	
 			for _, doorGrate := range doorGrateMap {
 				if doorGrate.GetX() == 57 && doorGrate.GetY() == 3 {
@@ -160,8 +159,7 @@ func dragonRoomUpdate(r *Room) {
 		}
 	} else {
 		// open gate when dragon defeated
-		if len(r.Entities.Players()) > 0 {
-			doorGrateMap := r.Entities.GetEntitiesByKind("dG")
+		if playersPresent > 0 {
 	
 			for _, doorGrate := range doorGrateMap {
 				if doorGrate.GetX() == 10 && doorGrate.GetY() == 10 {
@@ -188,11 +186,19 @@ func dragonRoomUpdate(r *Room) {
 			}	
 		}
 	}
+
+	r.Entities.mu.Unlock()
 	
 	r.Entities.UpdateEntities()
 }
 
 func castleRoomUpdate(r *Room) {
+	// prevent player goroutines from sending updates updating
+	for _, p := range r.Entities.Players() {
+		p.mu.Lock()
+		defer p.mu.Unlock()
+	}
+
 	r.Entities.mu.Lock()
     defer r.Entities.mu.Unlock()
 

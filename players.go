@@ -1,14 +1,15 @@
 package main
 
+import (
+	"sync"
+)
+
 // All generic structs and methods for players (Player implements EntityInterface)
 
 type Player struct {
 	EntityBase
 	BeingHeld string
-	roomChangeChan chan *Room
-	canUpdate chan bool
-	updateDone chan bool
-	updatePending chan bool
+	mu sync.Mutex
 }
 
 func newPlayer(tag string, x, y float64) *Player {
@@ -20,10 +21,9 @@ func newPlayer(tag string, x, y float64) *Player {
 	p.K = "p"
 	p.key = tag
 	p.canChangeRooms = true
-	p.roomChangeChan = make(chan *Room)
-	p.canUpdate = make(chan bool)
-	p.updateDone = make(chan bool)
-	p.updatePending = make(chan bool)
+	// p.roomChangeChan = make(chan *Room)
+	// p.canUpdate = make(chan bool)
+	// p.updateDone = make(chan bool)
 
 	return &p
 }
@@ -45,5 +45,5 @@ func (p *Player) Update(oX, oY float64) {
 		p.held.Update(oX, oY)
 	}
 
-	WallCheck(p)
+	wallCheck(p)
 }

@@ -78,7 +78,7 @@ func changeRoom(e EntityInterface, r *Room) bool {
 	return true
 }
 
-func WallCheck(e EntityInterface) {
+func wallCheck(e EntityInterface) {
 	var changedRoom bool
 
 	if e.GetX() <= 0 {
@@ -345,6 +345,12 @@ func (c *EntityContainer) Players() map[string]*Player {
 
 // Return serializtion of all entities ready for sending to clients
 func (c *EntityContainer) SerializeEntities() string {
+	// prevent player goroutines from sending updates while serialize function running
+	for _, p := range c.Players() {
+		p.mu.Lock()
+		defer p.mu.Unlock()
+	}
+
 	c.mu.Lock()
     defer c.mu.Unlock()
 
@@ -376,11 +382,17 @@ func (c *EntityContainer) SerializeEntities() string {
 
 // Calls each entity's Update function
 func (c *EntityContainer) UpdateEntities() {
+	// prevent player goroutines from sending updates while update function running
+	for _, p := range c.Players() {
+		p.mu.Lock()
+		defer p.mu.Unlock()
+	}
+
 	c.mu.Lock()
     defer c.mu.Unlock()
 
 	for _, v := range c.entities {
-		v.Update(0, 0)
+			v.Update(0, 0)		
 	}
 }
 
